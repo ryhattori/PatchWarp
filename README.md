@@ -7,3 +7,7 @@ Download and add all files to MATLAB path.
 
 ## How to use
 Please check an example demo in **patchwarp_demo.mat** file.
+
+## Citation
+Example citation format:
+Hattori, R. (2021). PatchWarp (Version 1.0.0) [Computer software]. https://doi.org/10.5281/zenodo.5232758
