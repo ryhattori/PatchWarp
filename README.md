@@ -17,7 +17,7 @@ Example citation format:
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5232758.svg)](https://doi.org/10.5281/zenodo.5232758)
 
-This pipeline was used in the following paper for the first time:   
+This pipeline was first used for the image processings for the following paper:  
 - Hattori, R., Danskin, B., Babic, Z., Mlynaryk, N., and Komiyama, T.  
 Area-Specificity and Plasticity of History-Dependent Value Coding During Learning.  
 Cell, 2019 Jun 13;177(7):1858-1872.e15. doi: 10.1016/j.cell.2019.04.027.  
