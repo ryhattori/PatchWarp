@@ -57,8 +57,8 @@ rigid_template_threshold = 0.2;
 % affinematrix_medfilt_tiffstack_num:   Window size (number of tif stack files) that are used for median temporal filtering of affine transformation matrices.
 warp_template_tiffstack_num = 11;
 warp_movave_tiffstack_num = 21;
-warp_blocksize = 4;
-warp_overlap_pix = 10;
+warp_blocksize = 8;
+warp_overlap_pix = 8;
 edge_remove_pix = 0;
 n_split4warpinit = 6;   % This must be an even number.
 affinematrix_abssum_threshold = 50;
