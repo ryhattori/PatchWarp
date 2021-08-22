@@ -5,3 +5,7 @@ Pyramid registration approach for rigid motion corrections by Akinori Mitani. Th
 
 ## ecc_patchwarp
 ECC is a gradient-based image registration algorithm. PatchWarp uses ECC to derive affine transformation matrices. The original codes are available at https://www.mathworks.com/matlabcentral/fileexchange/27253. Some functions were borrowed from its variant https://www.mathworks.com/matlabcentral/fileexchange/62921. The details can be found in the following paper: G.D.Evangelidis, E.Z.Psarakis, "Parametric Image Alignment using Enhanced Correlation Coefficient", IEEE Trans. on PAMI, vol.30, no.10, 2008"
+
+## ScanImageTiffReader
+Fast tiff readers.
+https://vidriotech.gitlab.io/scanimagetiffreader-matlab/
