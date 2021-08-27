@@ -53,6 +53,8 @@ rigid_template_threshold = 0.2;
 %                                       Gradient descent algorithm find the best matrices from the initial guess.
 % affinematrix_abssum_threshold:        If the sum of absolute values of all elements in an estimated affine transformation matrix exceeds 
 %                                       affinematrix_abssum_threshold, the matrix will be ignored before median temporal filtering.
+% affinematrix_abssum_jump_threshold:   Ignore estimated affine matrices when the estimated matrix is very different from the matrix from the adjacent frame. 
+%                                       If the sum(abs(matrix1 - matrix2)) > affinematrix_abssum_jump_threshold, the matrix will be ignored.
 % affinematrix_rho_threshold:           If the enhanced correlation coefficient between the template and transformed subfield is less than or equal to
 %                                       this threshold, the matrix will be ignored before median temporal filtering.
 % affinematrix_medfilt_tiffstack_num:   Window size (number of tif stack files) that are used for median temporal filtering of affine transformation matrices.
@@ -64,6 +66,7 @@ warp_overlap_pix_frac = 0.15;
 edge_remove_pix = 0;
 n_split4warpinit = 6;   % This must be an even number.
 affinematrix_abssum_threshold = 50;
+affinematrix_abssum_jump_threshold = 10;
 affinematrix_rho_threshold = 0.5;
 affinematrix_medfilt_tiffstack_num = 30;
 

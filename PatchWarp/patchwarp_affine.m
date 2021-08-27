@@ -1,4 +1,4 @@
-function patchwarp_affine(source_path, save_path, n_ch, align_ch, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix, affinematrix_abssum_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, downsample_frame_num)
+function patchwarp_affine(source_path, save_path, n_ch, align_ch, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix, affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, downsample_frame_num)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PatchWarp
 % pacman_warp
@@ -235,10 +235,9 @@ for i3 = 1:nz
 end
 
 % Clean warp_cell with a threshold for sudden matrix shifts
-SuddenJumpThreshold = 10;
 for i1 = 1:warp_blocksize
     for i2 = 1:warp_blocksize
-        temp = find(sum(sum(abs(diff(cell2mat(warp_cell(i1,i2,:)),1,3)),1),2) > SuddenJumpThreshold);
+        temp = find(sum(sum(abs(diff(cell2mat(warp_cell(i1,i2,:)),1,3)),1),2) > affinematrix_abssum_jump_threshold);
         if ~isempty(temp)
             for i3 = 1:length(temp)
                 warp_cell{i1,i2,temp(i3)} = NaN(2,3);
