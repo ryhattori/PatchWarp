@@ -117,7 +117,7 @@ function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n
                     image_stack_align(:,:,j),t(j,:));
             end
         end
-        downsampled_perstack = cast(downsample_mean(corrected_align,n_downsampled_perstack,3),class(image_stack_align));
+        downsampled_perstack = cast(downsample_mean(corrected_align, n_downsampled_perstack,3), class(image_stack_align));
     else
         downsampled_perstack = [];
     end

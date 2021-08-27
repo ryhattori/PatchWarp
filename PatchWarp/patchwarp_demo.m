@@ -44,7 +44,8 @@ rigid_template_threshold = 0.2;
 % warp_movave_tiffstack_num:            Window size for temporally smoothing downsampled images before estimation of affine transformation matrices.
 % warp_blocksize:                       Row and column numbers for splitting FOV. Each image is split into [warp_blocksize]*[warp_blocksize] subfields 
 %                                       for estimating and applying affine transformation matrices.
-% warp_overlap_pix:                     Number of extra pixels added to each subfield. Each subfield has 2*[warp_overlap_pix] pixels that are shared 
+% warp_overlap_pix_frac:                Fraction of edge pixels that overlaps with the adjacent patches. [warp_overlap_pix_frac]*[length of a patch] pixels 
+%                                       at the edge of each patch will be shared with the adjacent patch.
 %                                       with its adjacent subfields.
 % edge_remove_pix:                      Number of pixels that you want to ignore from the lateral edges of a FOV. This may be useful when your FOV contains
 %                                       edges that were not scanned by a microscope. 
@@ -59,7 +60,7 @@ warp_template_tiffstack_num = 11;
 warp_movave_tiffstack_num = 21;
 warp_blocksize = 8;     % For moderate distortion, use small number (e.g. 2-4). For severe distortion, use large number. Note that the processing time takes
                         % much longer if you use a large blocksize.
-warp_overlap_pix = 8;
+warp_overlap_pix_frac = 0.15;
 edge_remove_pix = 0;
 n_split4warpinit = 6;   % This must be an even number.
 affinematrix_abssum_threshold = 50;
@@ -74,7 +75,7 @@ downsample_frame_num = 50;
 %% Run PatchWarp
 patchwarp(source_path, save_path, n_ch, align_ch, save_ch, run_rigid_mc, run_affine_wc,...
     rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num,...
-    warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix, n_split4warpinit, edge_remove_pix,...
+    warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix,...
     affinematrix_abssum_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num,...
     downsample_frame_num);
 
