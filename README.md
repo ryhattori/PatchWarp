@@ -5,7 +5,7 @@ PatchWarp is an image processing pipeline for neuronal calcium imaging data. It 
 
 ---
 **Before PatchWarp affine transformations (Left)**    /    **After PatchWarp affine transformations (Right)**
-<img src="https://user-images.githubusercontent.com/25396523/130368392-0e2c448c-7a9c-4458-9a73-20d63ca06694.gif" width="680" height="340">  
+<img src="https://user-images.githubusercontent.com/25396523/131230196-1938d133-6ea5-4814-af53-41e9a949ddae.gif" width="680" height="340">  
 (Example 2.25 hrs *in vivo* two-photon calcium imaging with complex image distortions)
 
 ## Installation
