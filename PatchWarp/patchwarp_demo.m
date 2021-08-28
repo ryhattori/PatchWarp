@@ -66,9 +66,9 @@ warp_overlap_pix_frac = 0.15;
 edge_remove_pix = 0;
 n_split4warpinit = 6;   % This must be an even number.
 affinematrix_abssum_threshold = 50;
-affinematrix_abssum_jump_threshold = 10;
+affinematrix_abssum_jump_threshold = 20;
 affinematrix_rho_threshold = 0.5;
-affinematrix_medfilt_tiffstack_num = 30;
+affinematrix_medfilt_tiffstack_num = 10;
 
 %% Set parameter for a downsampled motion corrected tiff stack
 % This tiff stack file can be used for visual inspection of the motion correction quality
