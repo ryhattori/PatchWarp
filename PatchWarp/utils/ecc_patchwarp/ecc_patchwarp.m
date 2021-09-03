@@ -311,7 +311,7 @@ for nol=levels:-1:1
         C= G' * G;% C: Hessian matrix
         con=cond(C);
         if con>1.0e+15
-            disp('->ECC Warning: Badly conditioned Hessian matrix. Check the initialization or the overlap of images.')
+%             disp('->ECC Warning: Badly conditioned Hessian matrix. Check the initialization or the overlap of images.')
         end
         i_C = inv(C);
         
@@ -339,9 +339,9 @@ for nol=levels:-1:1
         
         
         if (sum(isnan(delta_p)))>0 %Hessian is close to singular
-            disp([' -> Algorithms stopped at ' num2str(i) '-th iteration of ' num2str(nol) '-th level due to bad condition of Hessian matrix.']);
-            disp([' -> Current results have been saved at results(' num2str(nol) ',' num2str(i) ').warp and results(' num2str(nol) ',' num2str(i) ').rho.']);
-            disp([' -> If you enabled a multilevel running, the output variables (warp, warpedImage) have been computed after mapping the current warp into the high-resolution level']);
+%             disp([' -> Algorithms stopped at ' num2str(i) '-th iteration of ' num2str(nol) '-th level due to bad condition of Hessian matrix.']);
+%             disp([' -> Current results have been saved at results(' num2str(nol) ',' num2str(i) ').warp and results(' num2str(nol) ',' num2str(i) ').rho.']);
+%             disp([' -> If you enabled a multilevel running, the output variables (warp, warpedImage) have been computed after mapping the current warp into the high-resolution level']);
             
             break_flag=1;
             break;
