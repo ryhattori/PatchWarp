@@ -1,4 +1,4 @@
-function patchwarp_affine(source_path, save_path, n_ch, align_ch, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix, affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, downsample_frame_num)
+function patchwarp_affine(source_path, save_path, n_ch, align_ch, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix, affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations, downsample_frame_num)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PatchWarp
 % pacman_warp
@@ -47,9 +47,9 @@ fn_downsampled2save_mean = fullfile(save_path,'downsampled',[fn_downsampled_name
 % n_ch = 1;
 % ch = 1;
 % margin_ratio = 0.125;
-n_depth = 1;
-n_step = 50;
-transform = 'affine';
+% warp_pyramid_levels = 1;
+% warp_pyramid_iterations = 50;
+% transform = 'affine';
 normalize_r1 = 1;
 %noramlize_r2 = 10; % default 32. Decrease this number if image quality is bad (dark). For example, 10.
  noramlize_r2 = 32; % Use when you use non-shrunk images for estimating
@@ -128,12 +128,18 @@ for i = 1:nz
     end
 end
 
-affine_init = [1 0 0; 0 1 0];
+if strcmp(transform, 'translation')
+    warp_init = [0; 0];
+elseif strcmp(transform, 'homography')
+    warp_init = [1 0 0; 0 1 0; 0 0 1];
+else
+    warp_init = [1 0 0; 0 1 0];
+end
 warp4template = cell(warp_blocksize, warp_blocksize, n_split4warpinit);
 for i1 = 1:warp_blocksize
     for i2 = 1:warp_blocksize
-        warp4template{i1,i2,n_split4warpinit/2} = affine_init;
-        warp4template{i1,i2,1+n_split4warpinit/2} = affine_init;
+        warp4template{i1,i2,n_split4warpinit/2} = warp_init;
+        warp4template{i1,i2,1+n_split4warpinit/2} = warp_init;
     end
 end
 rho = NaN(warp_blocksize,warp_blocksize,nz);
@@ -162,7 +168,8 @@ for nth_warp = [n_split4warpinit/2:-1:1,n_split4warpinit/2+1:n_split4warpinit]
                   [~, warp_cell{i1,i2,i3}, ~, rho(i1,i2,i3)]= ...
                     ecc_patchwarp(smoothed_downsampled_perstack(qN_y{i1,i2}, qN_x{i1,i2},i3),...
                     template_im_normalized(qN_y{i1,i2}, qN_x{i1,i2}),...
-                    n_depth, n_step, transform, warp4template{i1, i2, nth_warp}(1:2,1:3));
+                    warp_pyramid_levels, warp_pyramid_iterations, transform, warp4template{i1, i2, nth_warp});
+%                     warp_pyramid_levels, warp_pyramid_iterations, transform, warp4template{i1, i2, nth_warp}(1:2,1:3));
             end
         end
     end
@@ -174,13 +181,32 @@ for nth_warp = [n_split4warpinit/2:-1:1,n_split4warpinit/2+1:n_split4warpinit]
                     rho(i1,i2,i3) = NaN;
                 end
                 if isempty(warp_cell{i1,i2,i3})
-                    warp_cell{i1,i2,i3} = NaN(2,3);
+                    if strcmp(transform, 'translation')
+                        warp_cell{i1,i2,i3} = NaN(2,1);
+                    elseif strcmp(transform, 'homography')
+                        warp_cell{i1,i2,i3} = NaN(3,3);
+                    else
+                        warp_cell{i1,i2,i3} = NaN(2,3);
+                    end
                 end
-                if warp_cell{i1,i2,i3}(1,1)<0.6 || warp_cell{i1,i2,i3}(2,2)<0.6 || warp_cell{i1,i2,i3}(1,1)>1.4 || warp_cell{i1,i2,i3}(2,2)>1.4 || rho(i1,i2,i3) <= affinematrix_rho_threshold
-                    warp_cell{i1,i2,i3} = NaN(2,3);
+                if ~strcmp(transform, 'translation')
+                    if warp_cell{i1,i2,i3}(1,1)<0.6 || warp_cell{i1,i2,i3}(2,2)<0.6 || warp_cell{i1,i2,i3}(1,1)>1.4 || warp_cell{i1,i2,i3}(2,2)>1.4 || rho(i1,i2,i3) <= affinematrix_rho_threshold
+                        if strcmp(transform, 'homography')
+                            warp_cell{i1,i2,i3} = NaN(3,3);
+                        else
+                            warp_cell{i1,i2,i3} = NaN(2,3);
+                        end
+                    end
+                else
+                    if rho(i1,i2,i3) <= affinematrix_rho_threshold
+                        warp_cell{i1,i2,i3} = NaN(2,1);
+                    end
                 end
-                if size(warp_cell{i1,i2,i3},1) == 3
+                if (size(warp_cell{i1,i2,i3},1) == 3) && strcmp(transform, 'affine')
                     warp_cell{i1,i2,i3}(3,:) = [];
+                end
+                if (size(warp_cell{i1,i2,i3},1) ~= 3) && strcmp(transform, 'homography')
+                    warp_cell{i1,i2,i3} = NaN(3,3);
                 end
             end
         end
@@ -240,8 +266,16 @@ for i1 = 1:warp_blocksize
         temp = find(sum(sum(abs(diff(cell2mat(warp_cell(i1,i2,:)),1,3)),1),2) > affinematrix_abssum_jump_threshold);
         if ~isempty(temp)
             for i3 = 1:length(temp)
-                warp_cell{i1,i2,temp(i3)} = NaN(2,3);
-                warp_cell{i1,i2,temp(i3)+1} = NaN(2,3);
+                if strcmp(transform, 'translation')
+                    warp_cell{i1,i2,temp(i3)} = NaN(2,1);
+                    warp_cell{i1,i2,temp(i3)+1} = NaN(2,1);
+                elseif strcmp(transform, 'homography')
+                    warp_cell{i1,i2,temp(i3)} = NaN(3,3);
+                    warp_cell{i1,i2,temp(i3)+1} = NaN(3,3);
+                else
+                    warp_cell{i1,i2,temp(i3)} = NaN(2,3);
+                    warp_cell{i1,i2,temp(i3)+1} = NaN(2,3);
+                end
             end
         end
     end
@@ -250,7 +284,13 @@ for i3 = 1:nz
     for i1 = 1:warp_blocksize
         for i2 = 1:warp_blocksize
             if isempty(warp_cell{i1,i2,i3})
-                warp_cell{i1,i2,i3} = NaN(2,3);
+                if strcmp(transform, 'translation')
+                    warp_cell{i1,i2,i3} = NaN(2,1);
+                elseif strcmp(transform, 'homography')
+                    warp_cell{i1,i2,i3} = NaN(3,3);
+                else
+                    warp_cell{i1,i2,i3} = NaN(2,3);
+                end
             end
         end
     end
@@ -265,7 +305,7 @@ for i1 = 1:warp_blocksize
                 end
             end
         catch
-            temp = repmat(affine_init,[1,1,nz]);
+            temp = repmat(warp_init,[1,1,nz]);
         end
         for i3 = 1:nz
             warp_cell{i1,i2,i3} = temp(:,:,i3);
@@ -273,7 +313,7 @@ for i1 = 1:warp_blocksize
     end
 end
 
-save(fn_affinetransmat, 'warp_cell', 'rho', 'qN_x', 'qN_y', 'nx', 'ny', 'nz',...
+save(fn_affinetransmat, 'warp_cell', 'rho', 'qN_x', 'qN_y', 'nx', 'ny', 'nz', 'nonzero_row', 'nonzero_column',...
     'warp_template_tiffstack_num', 'warp_movave_tiffstack_num', 'warp_blocksize',...
     'warp_overlap_pix', 'n_split4warpinit', 'edge_remove_pix', 'affinematrix_abssum_threshold',...
     'affinematrix_rho_threshold', 'affinematrix_medfilt_tiffstack_num', 'downsample_frame_num');
@@ -303,15 +343,33 @@ if length(fns_summary_warp) ~= nz
 end
 
 % load all summary files
+% summary_temp = load(fullfile(save_path, fns_summary_warp(nz).name));
+% downsampled_frame_num_perstack_last = size(summary_temp.downsampled, 3);
+% summary_temp = load(fullfile(save_path, fns_summary_warp(nz-1).name));
+% downsampled_frame_num_perstack = size(summary_temp.downsampled, 3);
+% 
+% downsampled = zeros(ny, nx, (nz-1)*downsampled_frame_num_perstack+downsampled_frame_num_perstack_last);
+% downsampled_perstack = zeros(ny, nx, nz);
+% for i = 1:nz-1
+%     summary_temp = load(fullfile(save_path, fns_summary_warp(i).name));
+%     downsampled(:, :, (i-1)*downsampled_frame_num_perstack+1:i*downsampled_frame_num_perstack) = int16(summary_temp.downsampled); 
+%     downsampled_perstack(:, :, i) = int16(summary_temp.downsampled_perstack); 
+% end
+% summary_temp = load(fullfile(save_path, fns_summary_warp(nz).name));
+% downsampled(:, :, (nz-1)*downsampled_frame_num_perstack+1:end) = int16(summary_temp.downsampled); 
+% downsampled_perstack(:, :, nz) = int16(summary_temp.downsampled_perstack); 
+% downsampled = int16(downsampled);
+% downsampled_perstack = int16(downsampled_perstack);
+
 downsampled_c = cell(1, 1, nz);
 downsampled_perstack_c = cell(1, 1, nz);
 parfor i = 1:nz
     summary_temp = load(fullfile(save_path, fns_summary_warp(i).name));
-    downsampled_c{i} = summary_temp.downsampled; 
-    downsampled_perstack_c{i} = summary_temp.downsampled_perstack; 
+    downsampled_c{i} = int16(summary_temp.downsampled); 
+    downsampled_perstack_c{i} = int16(summary_temp.downsampled_perstack); 
 end
-downsampled = int16(cell2mat(downsampled_c));
-downsampled_perstack = int16(cell2mat(downsampled_perstack_c));
+downsampled = cell2mat(downsampled_c);
+downsampled_perstack = cell2mat(downsampled_perstack_c);
 
 % save
 write_tiff(fn_downsampled_perstack_save, downsampled_perstack, info_downsampled_perstack);

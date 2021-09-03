@@ -1,4 +1,4 @@
-function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, to_do_rank_transform)
+function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, to_do_rank_transform, rigid_template_center_frac)
     % save_path should be made beforehand, and all the arguments should be given.
     % if target is empty, do nothing but return whether it is done.
     % 
@@ -7,10 +7,12 @@ function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n
     %%
     if(nargin<8)
         n_ch = [];
+        rigid_template_center_frac = 0.9;
     end
     
     if(nargin<9)
         to_do_rank_transform = false;
+        rigid_template_center_frac = 0.9;
     end
     
     [~,fn_root]=fileparts(fn);
@@ -60,14 +62,14 @@ function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n
     
     L.newline('Done. Motion correcting.');
     if length(save_ch) > 1
-        ir = BilinearPyramidImageRegistrator(target,0.75,3);
+        ir = BilinearPyramidImageRegistrator(target, rigid_template_center_frac, 3);
         t = zeros(size(image_stack_save,3),2);
         for j = 1:size(image_stack_align,3)
             t(2*j-1,:) = ir.register(double(image_stack_align(:,:,j)));
             t(2*j,:) = t(2*j-1,:);
         end
     else
-        ir = BilinearPyramidImageRegistrator(target,0.75,3);
+        ir = BilinearPyramidImageRegistrator(target, rigid_template_center_frac, 3);
         t = zeros(size(image_stack_align,3),2);
         for j = 1:size(image_stack_align,3)
             t(j,:)=ir.register(double(image_stack_align(:,:,j)));

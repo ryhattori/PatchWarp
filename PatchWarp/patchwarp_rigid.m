@@ -1,4 +1,4 @@
-function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num, n_downsampled, n_downsampled_perstack, opt)
+function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num, rigid_template_center_frac, n_downsampled, n_downsampled_perstack, opt)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PatchWarp
 % patchwarp_rigid
@@ -55,7 +55,7 @@ function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_
         end
         
         parfor i = middle_tiffstackfile_id - floor((rigid_template_tiffstack_num - 1)/2):middle_tiffstackfile_id + ceil((rigid_template_tiffstack_num - 1)/2)
-            pyramid_registration(fn_list{i}, target, target_save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, true);      
+            pyramid_registration(fn_list{i}, target, target_save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, true, rigid_template_center_frac);      
         end
         fn_list_corrected_temp1 = cell(rigid_template_tiffstack_num, 1);
         for i = 1:rigid_template_tiffstack_num
@@ -95,7 +95,7 @@ function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_
         
         block_id = 1;
         parfor stack_id = block_range_list(block_id, 1):block_range_list(block_id, 2)
-            pyramid_registration(fn_list{stack_id}, target_fn{block_id}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, true);      
+            pyramid_registration(fn_list{stack_id}, target_fn{block_id}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, true, rigid_template_center_frac);      
         end
         target = make_template_from_file_multiple(fn_list_corrected, block_range_list(block_id, 2) - rigid_template_tiffstack_num + 1:block_range_list(block_id, 2), align_ch, n_ch, rigid_template_threshold, false);
         target = parse_image_input(target, align_ch);
@@ -106,7 +106,7 @@ function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_
         
         for i = 1:(rigid_template_block_num - 1)/2
             parfor stack_id = block_range_list(2 * i, 1):block_range_list(2 * i, 2)
-                pyramid_registration(fn_list{stack_id}, target_fn{2 * i}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, true);      
+                pyramid_registration(fn_list{stack_id}, target_fn{2 * i}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, true, rigid_template_center_frac);      
             end
             if i ~=(rigid_template_block_num - 1)/2
                 target = make_template_from_file_multiple(fn_list_corrected, block_range_list(2 * i, 2) - rigid_template_tiffstack_num + 1:block_range_list(2 * i, 2), align_ch, n_ch, rigid_template_threshold, false);
@@ -114,7 +114,7 @@ function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_
                 write_tiff(target_fn{2 * (i + 1)}, int16(target));
             end
             parfor stack_id = block_range_list(2 * i + 1, 1):block_range_list(2 * i + 1, 2)
-                pyramid_registration(fn_list{stack_id}, target_fn{2 * i + 1}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, true);      
+                pyramid_registration(fn_list{stack_id}, target_fn{2 * i + 1}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, true, rigid_template_center_frac);      
             end
             if i ~= (rigid_template_block_num - 1)/2
                 target = make_template_from_file_multiple(fn_list_corrected, block_range_list(2 * i + 1, 1):block_range_list(2 * i + 1, 1) + rigid_template_tiffstack_num - 1, align_ch, n_ch, rigid_template_threshold, false);

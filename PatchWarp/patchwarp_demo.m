@@ -11,8 +11,8 @@ patchwarp_path = 'Z:\People\Ryoma\PatchWarp';
 addpath(genpath(patchwarp_path))
 
 %% Specifiy source directory and saving directory
-source_path = 'D:\171024\RH825';    % Directory that contains original tif stack files
-save_path = 'D:\corrected\171024\RH825';    % Directory where motion corrected images will be saved
+source_path = 'Z:\People\Ryoma\MC_data\171104\RH825';    % Directory that contains original tif stack files
+save_path = 'Z:\People\Ryoma\MC_data\171104\RH825\corrected';    % Directory where motion corrected images will be saved
 
 %% Set general parameters
 % n_ch:                     Number of saved PMT channels. Set this to 2 for if the session was 2-color imaging.
@@ -35,11 +35,17 @@ run_affine_wc = 1;
 %                               calculated between the mean of all frames within a window (specified by rigid_template_tiffstack_num) and each 
 %                               frame within the window. Frames with the correlation coefficient lower than the specified quantile threshold will
 %                               be ignored when obtaining the final template image.
+% rigid_template_center_frac:   Central fraction of a template image used for registration. For example, 5% of pixels are ignored from each edge
+%                               when rigid_template_center_frac = 0.9.
 rigid_template_tiffstack_num = 5;
 rigid_template_block_num = 5;   % This must be an odd number. Minimum is 3.
 rigid_template_threshold = 0.2;
+rigid_template_center_frac = 0.95;
 
 %% Set parameter for warp correction
+% transform:                            Type of the image transformation. 'affine' works best. ('translation', 'euclidean', 'affine', 'homography')
+% warp_pyramid_levels:                  The number of levels in pyramid scheme (1 for a non pyramid implementation).
+% warp_pyramid_iterations:              The number of iterations per level.
 % warp_template_tiffstack_num:          Number of tif stack files that are used for making the template image.
 % warp_movave_tiffstack_num:            Window size for temporally smoothing downsampled images before estimation of affine transformation matrices.
 % warp_blocksize:                       Row and column numbers for splitting FOV. Each image is split into [warp_blocksize]*[warp_blocksize] subfields 
@@ -58,6 +64,9 @@ rigid_template_threshold = 0.2;
 % affinematrix_rho_threshold:           If the enhanced correlation coefficient between the template and transformed subfield is less than or equal to
 %                                       this threshold, the matrix will be ignored before median temporal filtering.
 % affinematrix_medfilt_tiffstack_num:   Window size (number of tif stack files) that are used for median temporal filtering of affine transformation matrices.
+transform = 'affine';
+warp_pyramid_levels = 1;
+warp_pyramid_iterations = 50;
 warp_template_tiffstack_num = 11;
 warp_movave_tiffstack_num = 21;
 warp_blocksize = 8;     % For moderate distortion, use small number (e.g. 2-4). For severe distortion, use large number. Note that the processing time takes
@@ -66,9 +75,9 @@ warp_overlap_pix_frac = 0.15;
 edge_remove_pix = 0;
 n_split4warpinit = 6;   % This must be an even number.
 affinematrix_abssum_threshold = 50;
-affinematrix_abssum_jump_threshold = 20;
+affinematrix_abssum_jump_threshold = 10;
 affinematrix_rho_threshold = 0.5;
-affinematrix_medfilt_tiffstack_num = 10;
+affinematrix_medfilt_tiffstack_num = 15;
 
 %% Set parameter for a downsampled motion corrected tiff stack
 % This tiff stack file can be used for visual inspection of the motion correction quality
@@ -77,9 +86,9 @@ downsample_frame_num = 50;
 
 %% Run PatchWarp
 patchwarp(source_path, save_path, n_ch, align_ch, save_ch, run_rigid_mc, run_affine_wc,...
-    rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num,...
+    rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num, rigid_template_center_frac,...
     warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix,...
-    affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num,...
+    affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations,...
     downsample_frame_num);
 
 

@@ -48,14 +48,7 @@ function applywarp_Npatches(fns_tiff_name, fns_summary_name, source_path, save_p
     temp_summary.downsampled = downsample_mean(stack_warp, temp_summary.n_downsampled, 3);
     
     % Save
-    if ~ispc
-        write_tiff(fullfile(save_path, [fns_tiff_name(1:end-4), '_warped.tif']), int16(stack_warp), info);
-        save(fullfile(save_path,[fns_summary_name(1:end-4) '_warped.mat']), '-struct', 'temp_summary');
-        clear temp_summary
-    else
-        write_tiff(img_filename, int16(stack_warp), info);
-        [~, msg] = copyfile(img_filename, fullfile(save_path, [fns_tiff_name(1:end-4) '_warped.tif']));
-        save(fullfile(save_path, [fns_summary_name(1:end-4) '_warped.mat']), '-struct', 'temp_summary');
-        clear temp_summary
-    end
+    write_tiff(fullfile(save_path, [fns_tiff_name(1:end-4), '_warped.tif']), int16(stack_warp), info);
+    save(fullfile(save_path,[fns_summary_name(1:end-4) '_warped.mat']), '-struct', 'temp_summary');
+    clear temp_summary
 end
