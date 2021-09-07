@@ -17,8 +17,8 @@ Download and add all files to MATLAB path.
 
 ## How to use
 Please check an example demo files. 
-For within-session distortion correction, please check [**patchwarp_demo.mat**](https://github.com/ryhattori/PatchWarp/blob/main/PatchWarp/patchwarp_demo.m).
-For across-session image registration, please check [**patchwarp_across_sessions_demo.mat**](https://github.com/ryhattori/PatchWarp/blob/main/PatchWarp/patchwarp_across_sessions_demo.m).
+For within-session distortion correction, please check [**patchwarp_demo.m**](https://github.com/ryhattori/PatchWarp/blob/main/PatchWarp/patchwarp_demo.m).
+For across-session image registration, please check [**patchwarp_across_sessions_demo.m**](https://github.com/ryhattori/PatchWarp/blob/main/PatchWarp/patchwarp_across_sessions_demo.m).
 
 ## Citation
 Example citation format:  
