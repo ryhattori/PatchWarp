@@ -17,6 +17,7 @@ addpath(genpath(patchwarp_path))
 %% Specifiy paths of the summary images from 2 different sessions
 % Summary images can be either the mean image of all frames (e.g. downsampled_50_warped_mean.tif) or 
 % the max-projection of downsampled movie (e.g. downsampled_50_warped_mean.tif) from the outputs of PatchWarp pipeline.
+% They do not need to be from the main PatchWarp pipeline if you used a different motion correction software.
 % The results are more robust and accurate if both mean and max-projection images are used.
 session1_mean_path = 'G:\Data\171024\RH825\post_warp_affine\downsampled\downsampled_50_warped_mean.tif';
 session1_max_path = 'G:\Data\171024\RH825\post_warp_affine\downsampled\downsampled_50_warped_max.tif';
@@ -91,8 +92,8 @@ title('Max images after 2nd affine')
 % images_affine1:    	Images after the 1st affine transformation.
 % images_affine2:       Images after the 2nd affine transformation. This will be empty if second_affine==0.
 
-image_path = 'G:\Data\171026\RH825\post_warp_affine\downsampled\roi_mask.tif';
-% image_path = 'G:\Data\171026\RH825\post_warp_affine\RH825camk2GC6sx18p70MatchingRSCr_001_002_corrected_warped.tif';
+% image_path = 'G:\Data\171026\RH825\post_warp_affine\downsampled\roi_mask.tif';
+image_path = 'G:\Data\171026\RH825\post_warp_affine\RH825camk2GC6sx18p70MatchingRSCr_001_002_corrected_warped.tif';
 second_affine = 1;
 
 input_images = double(read_tiff(image_path));
