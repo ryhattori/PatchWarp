@@ -13,7 +13,7 @@ PatchWarp is an image processing pipeline for neuronal calcium imaging data. It 
 (A later imaging session (red) was registered to an earlier imaging session (green))
 
 ## Installation
-Download and add all files to MATLAB path.
+Download files from this github repository, and add all files to your MATLAB path.
 
 ## How to use
 Please check an example demo files. 
