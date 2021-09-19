@@ -72,7 +72,7 @@ affine_norm_radius = 32;
 warp_pyramid_levels = 1;
 warp_pyramid_iterations = 50;
 warp_template_tiffstack_num = 11;
-warp_movave_tiffstack_num = 21;
+warp_movave_tiffstack_num = 11;
 warp_blocksize = 8;     % For moderate distortion, use small number (e.g. 2-4). For severe distortion, use large number. Note that the processing time takes
                         % much longer if you use a large blocksize.
 warp_overlap_pix_frac = 0.15;
@@ -81,7 +81,7 @@ n_split4warpinit = 6;   % This must be an even number.
 affinematrix_abssum_threshold = 50;
 affinematrix_abssum_jump_threshold = 10;
 affinematrix_rho_threshold = 0.5;
-affinematrix_medfilt_tiffstack_num = 15;
+affinematrix_medfilt_tiffstack_num = 11;
 
 %% Set parameter for a downsampled motion corrected tiff stack
 % This tiff stack file can be used for visual inspection of the motion correction quality
