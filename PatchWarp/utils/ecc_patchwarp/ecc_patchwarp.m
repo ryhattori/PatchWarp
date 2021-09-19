@@ -58,7 +58,7 @@ function [results, warp, warpedImage, rho_final] = ecc_patchwarp(image, template
 % 
 % Modified by Ryoma Hattori for PtachWarp
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+warning off
 
 break_flag=0;
 
@@ -287,7 +287,8 @@ for nol=levels:-1:1
             results(nol,i).warp = warp;
         end
         
-        results(nol,i).rho = temp_curr(:)'*wim(:) / norm(tempzm(:)) / norm(wim(:));
+%         results(nol,i).rho = temp_curr(:)'*wim(:) / norm(tempzm(:)) / norm(wim(:));
+        results(nol,i).rho = tempzm(:)'*wim(:) / norm(tempzm(:)) / norm(wim(:));
         
         if (i == noi) % the algorithm is executed (noi-1) times
             break;

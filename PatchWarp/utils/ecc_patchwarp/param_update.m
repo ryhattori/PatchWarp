@@ -37,7 +37,7 @@ end
 
 if strcmp(transform, 'euclidean')
 
-    theta = sign(warp(2,1))*acos(warp(1,1))+delta_p(1);
+    theta = sign(warp_in(2,1))*acos(warp_in(1,1))+delta_p(1);
     tx = warp_in(1,3)+delta_p(2);
     ty = warp_in(2,3)+delta_p(3);
     warp_out = [cos(theta) -sin(theta) tx;...
