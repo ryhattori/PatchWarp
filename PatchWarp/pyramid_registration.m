@@ -1,4 +1,4 @@
-function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, to_do_rank_transform, rigid_template_center_frac)
+function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_radius, rigid_template_center_frac)
     % save_path should be made beforehand, and all the arguments should be given.
     % if target is empty, do nothing but return whether it is done.
     % 
@@ -11,8 +11,7 @@ function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n
     end
     
     if(nargin<9)
-        to_do_rank_transform = false;
-        rigid_template_center_frac = 0.9;
+        rigid_norm_radius = 32;
     end
     
     [~,fn_root]=fileparts(fn);
@@ -55,10 +54,8 @@ function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n
         end
     end
     
-    if(to_do_rank_transform)
-        target = rank_transform(target);
-        image_stack_align = rank_transform(image_stack_align);
-    end
+    target = imnormalize2(double(target), rigid_norm_radius);
+    image_stack_align = imnormalize2(double(image_stack_align), rigid_norm_radius);
     
     L.newline('Done. Motion correcting.');
     if length(save_ch) > 1
@@ -131,9 +128,8 @@ function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n
     
     method = 'interpolate';
     
-    if(to_do_rank_transform)
-        method = [method ' rank']; 
-    end
+    method = [method ' localnorm']; 
+
     save(fn_summary_mat, '-v6',   'downsampled',...
                                   'downsampled_perstack',...
                                   'info',...

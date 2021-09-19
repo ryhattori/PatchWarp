@@ -27,6 +27,7 @@ run_rigid_mc = 1;
 run_affine_wc = 1;
 
 %% Set parameter for rigid motion correction
+% rigid_norm_radius:            Radius of a circular filter, which is used for local intensity normalization before hill climbing algorithm.
 % rigid_template_tiffstack_num: Number of tif stack files used for estimating template images. For example, if each tif stack file has 500
 %                               frames, each template image will be created using 500*[rigid_template_tiffstack_num] frames.
 % rigid_template_block_num:     Number of blocks for an imaging session to be split for rigid motion correction. 
@@ -37,6 +38,7 @@ run_affine_wc = 1;
 %                               be ignored when obtaining the final template image.
 % rigid_template_center_frac:   Central fraction of a template image used for registration. For example, 5% of pixels are ignored from each edge
 %                               when rigid_template_center_frac = 0.9.
+rigid_norm_radius = 32;
 rigid_template_tiffstack_num = 5;
 rigid_template_block_num = 5;   % This must be an odd number. Minimum is 3.
 rigid_template_threshold = 0.2;
@@ -44,6 +46,7 @@ rigid_template_center_frac = 0.95;
 
 %% Set parameter for warp correction
 % transform:                            Type of the image transformation. 'affine' works best. ('translation', 'euclidean', 'affine', 'homography')
+% affine_norm_radius:                   Radius of a circular filter, which is used for local intensity normalization before gradient-based algorithm.
 % warp_pyramid_levels:                  The number of levels in pyramid scheme (1 for a non pyramid implementation).
 % warp_pyramid_iterations:              The number of iterations per level.
 % warp_template_tiffstack_num:          Number of tif stack files that are used for making the template image.
@@ -65,6 +68,7 @@ rigid_template_center_frac = 0.95;
 %                                       this threshold, the matrix will be ignored before median temporal filtering.
 % affinematrix_medfilt_tiffstack_num:   Window size (number of tif stack files) that are used for median temporal filtering of affine transformation matrices.
 transform = 'affine';
+affine_norm_radius = 32;
 warp_pyramid_levels = 1;
 warp_pyramid_iterations = 50;
 warp_template_tiffstack_num = 11;
@@ -86,8 +90,8 @@ downsample_frame_num = 50;
 
 %% Run PatchWarp
 patchwarp(source_path, save_path, n_ch, align_ch, save_ch, run_rigid_mc, run_affine_wc,...
-    rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num, rigid_template_center_frac,...
-    warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix,...
+    rigid_norm_radius, rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num, rigid_template_center_frac,...
+    affine_norm_radius, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix,...
     affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations,...
     downsample_frame_num);
 

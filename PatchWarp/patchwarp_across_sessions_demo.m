@@ -19,10 +19,10 @@ addpath(genpath(patchwarp_path))
 % the max-projection of downsampled movie (e.g. downsampled_50_warped_mean.tif) from the outputs of PatchWarp pipeline.
 % They do not need to be from the main PatchWarp pipeline if you used a different motion correction software.
 % The results are more robust and accurate if both mean and max-projection images are used.
-session1_mean_path = 'G:\Data\171024\RH825\post_warp_affine\downsampled\downsampled_50_warped_mean.tif';
-session1_max_path = 'G:\Data\171024\RH825\post_warp_affine\downsampled\downsampled_50_warped_max.tif';
-session2_mean_path = 'G:\Data\171026\RH825\post_warp_affine\downsampled\downsampled_50_warped_mean.tif';
-session2_max_path = 'G:\Data\171026\RH825\post_warp_affine\downsampled\downsampled_50_warped_max.tif';
+session1_mean_path = 'G:\Data\171024\RH825\corrected\post_warp_affine\downsampled\downsampled_50_warped_mean.tif';
+session1_max_path = 'G:\Data\171024\RH825\corrected\post_warp_affine\downsampled\downsampled_50_warped_max.tif';
+session2_mean_path = 'G:\Data\171026\RH825\corrected\post_warp_affine\downsampled\downsampled_50_warped_mean.tif';
+session2_max_path = 'G:\Data\171026\RH825\corrected\post_warp_affine\downsampled\downsampled_50_warped_max.tif';
 
 %% Specify saving directory
 save_path = 'G:\Data\171026\RH825';    % Directory where the results will be saved
@@ -46,18 +46,20 @@ image1_all = cat(3, image1_mean, image1_max);
 image2_all = cat(3, image2_mean, image2_max);
 
 %% Apply PatchWarp to register images from session#2 to images from session#1
+% transform1:                           Transformation type for the 1st transformation that uses the whole FOV. Typically 'euclidean' should work best. 
+%                                       If 'euclidean' does not work, try 'affine'. This 1st transformation matrix is obtained by the pyramid method with 3 levels.
+% transform2:                           Transformation type for the 2nd transformations for each subfield. Typically 'affine' should work best. 
+%                                       These 2nd transformation matrices are obtained without pyramids.
 % warp_blocksize:                       Row and column numbers for splitting FOV. Each image is split into [warp_blocksize]*[warp_blocksize] subfields 
 %                                       for estimating and applying affine transformation matrices.
 % warp_overlap_pix_frac:                Fraction of edge pixels that overlaps with the adjacent patches. [warp_overlap_pix_frac]*[length of a patch] pixels 
 %                                       at the edge of each patch will be shared with the adjacent patch.
 %                                       with its adjacent subfields.
-% warp_init_1st_affine:                 Initial guess of affine transformation matrix for the 1st iteration of affine transformation which uses the who FOV. 
-%                                       Default is the identity matrix (Note that the 3rd row is omitted). If the result is not satisfactory and you can guess 
-%                                       the transfomation matrix (translation, rotation, etc.), changing this initial guess of the transformation matrix may improve the result.
+transform1 = 'euclidean';
+transform2 = 'affine';
 warp_blocksize = 8;
 warp_overlap_pix_frac = 0.15;
-warp_init_1st_affine = [1 0 0; 0 1 0];
-patchwarp_results = patchwarp_across_sessions(image1_all, image2_all, warp_blocksize, warp_overlap_pix_frac, warp_init_1st_affine);
+patchwarp_results = patchwarp_across_sessions(image1_all, image2_all, transform1, transform2, warp_blocksize, warp_overlap_pix_frac);
 
 save(fullfile(save_path, 'patchwarp_across_session_results.mat'), 'patchwarp_results')
 
@@ -65,40 +67,44 @@ save(fullfile(save_path, 'patchwarp_across_session_results.mat'), 'patchwarp_res
 figure
 set(gcf,'Position',[50 50 1550 950])
 subplot(2,3,1)
-imshow(imfuse(patchwarp_results.image1_all(:, :, 1),patchwarp_results.image2_all(:, :, 1),'falsecolor','Scaling','joint','ColorChannels',[1 2 0]));
+imshow(imfuse(patchwarp_results.image1_all(:, :, 1),patchwarp_results.image2_all(:, :, 1),'falsecolor','Scaling','joint','ColorChannels','red-cyan'));
 title('Mean images (raw)')
 subplot(2,3,2)
-imshow(imfuse(patchwarp_results.image1_all(:, :, 1),patchwarp_results.image2_affine1(:, :, 1),'falsecolor','Scaling','joint','ColorChannels',[1 2 0]));
-title('Mean images after 1st affine')
+imshow(imfuse(patchwarp_results.image1_all(:, :, 1),patchwarp_results.image2_warp1(:, :, 1),'falsecolor','Scaling','joint','ColorChannels','red-cyan'));
+title('Mean images after 1st transformation (euclidean)')
 subplot(2,3,3)
-imshow(imfuse(patchwarp_results.image1_all(:, :, 1),patchwarp_results.image2_affine2(:, :, 1),'falsecolor','Scaling','joint','ColorChannels',[1 2 0]));
-title('Mean images after 2nd affine')
+imshow(imfuse(patchwarp_results.image1_all(:, :, 1),patchwarp_results.image2_warp2(:, :, 1),'falsecolor','Scaling','joint','ColorChannels','red-cyan'));
+title('Mean images after 2nd transformation (affine)')
 subplot(2,3,4)
-imshow(imfuse(patchwarp_results.image1_all(:, :, 2),patchwarp_results.image2_all(:, :, 2),'falsecolor','Scaling','joint','ColorChannels',[1 2 0]));
+imshow(imfuse(patchwarp_results.image1_all(:, :, 2),patchwarp_results.image2_all(:, :, 2),'falsecolor','Scaling','joint','ColorChannels','red-cyan'));
 title('Max images (raw)')
 subplot(2,3,5)
-imshow(imfuse(patchwarp_results.image1_all(:, :, 2),patchwarp_results.image2_affine1(:, :, 2),'falsecolor','Scaling','joint','ColorChannels',[1 2 0]));
-title('Max images after 1st affine')
+imshow(imfuse(patchwarp_results.image1_all(:, :, 2),patchwarp_results.image2_warp1(:, :, 2),'falsecolor','Scaling','joint','ColorChannels','red-cyan'));
+title('Max images after 1st transformation (euclidean)')
 subplot(2,3,6)
-imshow(imfuse(patchwarp_results.image1_all(:, :, 2),patchwarp_results.image2_affine2(:, :, 2),'falsecolor','Scaling','joint','ColorChannels',[1 2 0]));
-title('Max images after 2nd affine')
+imshow(imfuse(patchwarp_results.image1_all(:, :, 2),patchwarp_results.image2_warp2(:, :, 2),'falsecolor','Scaling','joint','ColorChannels','red-cyan'));
+title('Max images after 2nd transformation (affine)')
 
 %% Apply the obtained transformations to other images (e.g. individual frames, ROI mask)
 % INPUTS:
 % patchwarp_results:    Output from the above "patchwarp_across_sessions" function
 % input_images:         Input can be 2D (x, y) or 3D (x, y, frames). For example, it can transform individual frames or a single summary image (e.g. ROI mask).    
-% second_affine:        Apply only the 1st whole-FOV affine only (0), or apply both the 1st and the 2nd subfield-wise affine transformations (1).
+% second_affine:        Apply only the 1st whole-FOV euclidean only (0), or apply both the 1st and the 2nd subfield-wise affine transformations (1).
 % OUTPUTS:
-% images_affine1:    	Images after the 1st affine transformation.
-% images_affine2:       Images after the 2nd affine transformation. This will be empty if second_affine==0.
+% images_warp1:         Images after the 1st transformation (euclidean).
+% images_warp2:         Images after the 2nd transformation (affine). This will be empty if second_affine==0.
 
-% image_path = 'G:\Data\171026\RH825\post_warp_affine\downsampled\roi_mask.tif';
-image_path = 'G:\Data\171026\RH825\post_warp_affine\RH825camk2GC6sx18p70MatchingRSCr_001_002_corrected_warped.tif';
 second_affine = 1;
-
+image_path = 'G:\Data\171026\RH825\corrected\post_warp_affine\downsampled\roi_mask.tif';
+% image_path = 'G:\Data\171026\RH825\corrected\post_warp_affine\RH825camk2GC6sx18p70MatchingRSCr_001_002_corrected_warped.tif';
 input_images = double(read_tiff(image_path));
-[images_affine1, images_affine2] = patchwarp_across_sessions_apply(input_images, patchwarp_results, second_affine);
+
+[images_warp1, images_warp2] = patchwarp_across_sessions_apply(input_images, patchwarp_results, second_affine);
+
 figure
 set(gcf,'Position',[50 50 1550 950])
 subplot(2,3,1)
-imshow(imfuse(input_images(:, :, 1), images_affine1(:, :, 1),'falsecolor','Scaling','joint','ColorChannels',[1 2 0]));
+imshow(imfuse(input_images(:, :, 1), images_warp1(:, :, 1),'falsecolor','Scaling','joint','ColorChannels','red-cyan'));
+subplot(2,3,2)
+imshow(imfuse(input_images(:, :, 1), images_warp2(:, :, 1),'falsecolor','Scaling','joint','ColorChannels','red-cyan'));
+

@@ -1,4 +1,4 @@
-function patchwarp_affine(source_path, save_path, n_ch, align_ch, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix, affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations, downsample_frame_num)
+function patchwarp_affine(source_path, save_path, n_ch, align_ch, affine_norm_radius, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix, affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations, downsample_frame_num)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PatchWarp
 % pacman_warp
@@ -9,18 +9,18 @@ function patchwarp_affine(source_path, save_path, n_ch, align_ch, warp_template_
 % Email: rhattori0204@gmail.com
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if ispc
-   %make temp folder and files
-   local_dir = 'C:\temp_files';
-   local_filename = [local_dir filesep 'temp_img_' datestr(now,'yymmddHHMMSSFFF') '.tif'];
-   if ~isdir(local_dir)
-       mkdir(local_dir)
-   end
-   % delete local temp file if it exists
-   if exist(local_filename,'file')
-       delete(local_filename)
-   end
-end
+% if ispc
+%    %make temp folder and files
+%    local_dir = 'C:\temp_files';
+%    local_filename = [local_dir filesep 'temp_img_' datestr(now,'yymmddHHMMSSFFF') '.tif'];
+%    if ~isdir(local_dir)
+%        mkdir(local_dir)
+%    end
+%    % delete local temp file if it exists
+%    if exist(local_filename,'file')
+%        delete(local_filename)
+%    end
+% end
 
 mkdir(save_path, 'downsampled');
 
@@ -36,7 +36,7 @@ fn_downsampled_name = fn_downsampled.name;
 fn_downsampled_perstack = fullfile(source_path,'downsampled',downsampled_perstack_name);
 fn_downsampled_perstack_save = fullfile(save_path,'downsampled',[downsampled_perstack_name(1:end-4),'_warped.tif']);
 fn_affinetransmat = fullfile(save_path, 'affine_transformation_matrix.mat');
-fn_downsampled = fullfile(source_path,'downsampled',fn_downsampled_name);
+% fn_downsampled = fullfile(source_path,'downsampled',fn_downsampled_name);
 fn_downsampled2save = fullfile(save_path,'downsampled',[fn_downsampled_name(1:end-4),'_warped.tif']);
 fn_downsampled2save_max = fullfile(save_path,'downsampled',[fn_downsampled_name(1:end-4),'_warped_max.tif']);
 fn_downsampled2save_mean = fullfile(save_path,'downsampled',[fn_downsampled_name(1:end-4),'_warped_mean.tif']);
@@ -50,25 +50,21 @@ fn_downsampled2save_mean = fullfile(save_path,'downsampled',[fn_downsampled_name
 % warp_pyramid_levels = 1;
 % warp_pyramid_iterations = 50;
 % transform = 'affine';
-normalize_r1 = 1;
-%noramlize_r2 = 10; % default 32. Decrease this number if image quality is bad (dark). For example, 10.
- noramlize_r2 = 32; % Use when you use non-shrunk images for estimating
-% affine transformation?
-noramlize_offset = 50;
 
 disp('Loading downsampled_perstack file...')
-if ispc %copy to local
-    disp('Copying downsampled_perstack to local drive...')
-    img_filename = fn_downsampled_perstack;
-    disp(img_filename);
-    copyfile(img_filename,local_filename);
-    disp('Done.')
-    img_filename = local_filename;
-    disp(img_filename);
-    [stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(img_filename, align_ch, n_ch);
-else
-    [stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(fn_downsampled_perstack, align_ch, n_ch);
-end
+[stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(fn_downsampled_perstack, align_ch, n_ch);
+% if ispc %copy to local
+%     disp('Copying downsampled_perstack to local drive...')
+%     img_filename = fn_downsampled_perstack;
+%     disp(img_filename);
+%     copyfile(img_filename,local_filename);
+%     disp('Done.')
+%     img_filename = local_filename;
+%     disp(img_filename);
+%     [stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(img_filename, align_ch, n_ch);
+% else
+%     [stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(fn_downsampled_perstack, align_ch, n_ch);
+% end
 
 stack_downsampled_perstack = stack_downsampled_perstack(:, 1 + edge_remove_pix:end - edge_remove_pix, :); % remove n pixels from left and right edges. 
 
@@ -115,16 +111,16 @@ if mod(n_split4warpinit, 2) == 1
 end
 
 template_im = mean(stack_downsampled_perstack(:, :, round(nz/2)-round((warp_template_tiffstack_num - 1)/2):round(nz/2)- round((warp_template_tiffstack_num - 1)/2) + warp_template_tiffstack_num - 1), 3); % default (:,:,1)
-template_im_normalized = imnormalize(template_im, normalize_r1, noramlize_r2, noramlize_offset);
+template_im_normalized = imnormalize2(template_im, affine_norm_radius);
 
 smoothed_downsampled_perstack = NaN(ny, nx, nz);
 for i = 1:nz
     if i <= round((warp_movave_tiffstack_num - 1) / 2)
-        smoothed_downsampled_perstack(:,:,i) = int16(imnormalize(mean(stack_downsampled_perstack(:, :, 2:warp_movave_tiffstack_num), 3), normalize_r1, noramlize_r2, noramlize_offset));
+        smoothed_downsampled_perstack(:,:,i) = int16(imnormalize2(mean(stack_downsampled_perstack(:, :, 2:warp_movave_tiffstack_num), 3), affine_norm_radius));
     elseif i > nz - round((warp_movave_tiffstack_num - 1) / 2)
-        smoothed_downsampled_perstack(:,:,i) = int16(imnormalize(mean(stack_downsampled_perstack(:, :, nz-warp_movave_tiffstack_num:nz-1), 3), normalize_r1, noramlize_r2, noramlize_offset));
+        smoothed_downsampled_perstack(:,:,i) = int16(imnormalize2(mean(stack_downsampled_perstack(:, :, nz-warp_movave_tiffstack_num:nz-1), 3), affine_norm_radius));
     else
-        smoothed_downsampled_perstack(:,:,i) = int16(imnormalize(mean(stack_downsampled_perstack(:, :, i-round((warp_movave_tiffstack_num - 1) / 2):i-round((warp_movave_tiffstack_num - 1) / 2) + warp_movave_tiffstack_num - 1),3), normalize_r1, noramlize_r2, noramlize_offset));
+        smoothed_downsampled_perstack(:,:,i) = int16(imnormalize2(mean(stack_downsampled_perstack(:, :, i-round((warp_movave_tiffstack_num - 1) / 2):i-round((warp_movave_tiffstack_num - 1) / 2) + warp_movave_tiffstack_num - 1),3), affine_norm_radius));
     end
 end
 
@@ -376,8 +372,8 @@ write_tiff(fn_downsampled_perstack_save, downsampled_perstack, info_downsampled_
 write_tiff(fn_downsampled2save, downsampled, info_downsampled_perstack);
 write_tiff(fn_downsampled2save_max, max(downsampled, [], 3), info_downsampled_perstack);
 write_tiff(fn_downsampled2save_mean, mean(downsampled, 3), info_downsampled_perstack);
-%     write_tiff(fn_downsampled2save_max_norm, imnormalize(max(downsampled, [], 3), normalize_r1, noramlize_r2, noramlize_offset));
-%     write_tiff(fn_downsampled2save_mean_norm, imnormalize(mean(downsampled, 3), normalize_r1, noramlize_r2, noramlize_offset));
+%     write_tiff(fn_downsampled2save_max_norm, imnormalize2(max(downsampled, [], 3), affine_norm_radius));
+%     write_tiff(fn_downsampled2save_mean_norm, imnormalize2(mean(downsampled, 3), affine_norm_radius));
 
 disp('Warping complete')
 
