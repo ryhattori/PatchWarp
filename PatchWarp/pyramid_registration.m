@@ -1,18 +1,10 @@
-function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_radius, rigid_template_center_frac)
+function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac)
     % save_path should be made beforehand, and all the arguments should be given.
     % if target is empty, do nothing but return whether it is done.
     % 
     % Original code was written by Aki Mitani and available at https://github.com/amitani/matlab_motion_correct
     % revised by Ryoma Hattori for PatchWarp pipeline
     %%
-    if(nargin<8)
-        n_ch = [];
-        rigid_template_center_frac = 0.9;
-    end
-    
-    if(nargin<9)
-        rigid_norm_radius = 32;
-    end
     
     [~,fn_root]=fileparts(fn);
     fn_corrected_tif = fullfile(save_path,[fn_root '_corrected.tif']);
@@ -54,8 +46,15 @@ function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n
         end
     end
     
-    target = imnormalize2(double(target), rigid_norm_radius);
-    image_stack_align = imnormalize2(double(image_stack_align), rigid_norm_radius);
+    if strcmp(rigid_norm_method, 'rank')
+        target = rank_transform(target);
+        image_stack_align = rank_transform(image_stack_align);
+    elseif strcmp(rigid_norm_method, 'local')
+        target = imnormalize2(double(target), rigid_norm_radius);
+        image_stack_align = imnormalize2(double(image_stack_align), rigid_norm_radius);
+    else
+        disp(['Warning: ' rigid_norm_method 'is not a valid normalization method!!'])
+    end
     
     L.newline('Done. Motion correcting.');
     if length(save_ch) > 1
@@ -128,7 +127,11 @@ function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n
     
     method = 'interpolate';
     
-    method = [method ' localnorm']; 
+    if strcmp(rigid_norm_method, 'rank')
+        method = [method ' rank']; 
+    elseif strcmp(rigid_norm_method, 'local')
+        method = [method ' localnorm']; 
+    end
 
     save(fn_summary_mat, '-v6',   'downsampled',...
                                   'downsampled_perstack',...

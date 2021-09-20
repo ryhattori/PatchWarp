@@ -11,8 +11,8 @@ patchwarp_path = 'Z:\People\Ryoma\PatchWarp';
 addpath(genpath(patchwarp_path))
 
 %% Specifiy source directory and saving directory
-source_path = 'Z:\People\Ryoma\MC_data\171104\RH825';    % Directory that contains original tif stack files
-save_path = 'Z:\People\Ryoma\MC_data\171104\RH825\corrected';    % Directory where motion corrected images will be saved
+source_path = 'Z:\People\Ryoma\MC_data\171008\RH825';    % Directory that contains original tif stack files
+save_path = 'Z:\People\Ryoma\MC_data\171008\RH825\corrected';    % Directory where motion corrected images will be saved
 
 %% Set general parameters
 % n_ch:                     Number of saved PMT channels. Set this to 2 for if the session was 2-color imaging.
@@ -27,7 +27,9 @@ run_rigid_mc = 1;
 run_affine_wc = 1;
 
 %% Set parameter for rigid motion correction
-% rigid_norm_radius:            Radius of a circular filter, which is used for local intensity normalization before hill climbing algorithm.
+% rigid_norm_method:            'rank' or 'local'. When PMT noise is high,'rank' method probably works better. Try 'local' when 'rank' does not work well.
+% rigid_norm_radius:            Radius of a circular filter for 'local' normalization method. This used for local intensity normalization before 
+%                               hill climbing algorithm. This parameter will be ignored when the method is 'rank'.
 % rigid_template_tiffstack_num: Number of tif stack files used for estimating template images. For example, if each tif stack file has 500
 %                               frames, each template image will be created using 500*[rigid_template_tiffstack_num] frames.
 % rigid_template_block_num:     Number of blocks for an imaging session to be split for rigid motion correction. 
@@ -38,6 +40,7 @@ run_affine_wc = 1;
 %                               be ignored when obtaining the final template image.
 % rigid_template_center_frac:   Central fraction of a template image used for registration. For example, 5% of pixels are ignored from each edge
 %                               when rigid_template_center_frac = 0.9.
+rigid_norm_method = 'rank';
 rigid_norm_radius = 32;
 rigid_template_tiffstack_num = 5;
 rigid_template_block_num = 5;   % This must be an odd number. Minimum is 3.
@@ -72,7 +75,7 @@ affine_norm_radius = 32;
 warp_pyramid_levels = 1;
 warp_pyramid_iterations = 50;
 warp_template_tiffstack_num = 11;
-warp_movave_tiffstack_num = 11;
+warp_movave_tiffstack_num = 21;
 warp_blocksize = 8;     % For moderate distortion, use small number (e.g. 2-4). For severe distortion, use large number. Note that the processing time takes
                         % much longer if you use a large blocksize.
 warp_overlap_pix_frac = 0.15;
@@ -81,7 +84,7 @@ n_split4warpinit = 6;   % This must be an even number.
 affinematrix_abssum_threshold = 50;
 affinematrix_abssum_jump_threshold = 10;
 affinematrix_rho_threshold = 0.5;
-affinematrix_medfilt_tiffstack_num = 11;
+affinematrix_medfilt_tiffstack_num = 15;
 
 %% Set parameter for a downsampled motion corrected tiff stack
 % This tiff stack file can be used for visual inspection of the motion correction quality
@@ -90,7 +93,7 @@ downsample_frame_num = 50;
 
 %% Run PatchWarp
 patchwarp(source_path, save_path, n_ch, align_ch, save_ch, run_rigid_mc, run_affine_wc,...
-    rigid_norm_radius, rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num, rigid_template_center_frac,...
+    rigid_norm_method, rigid_norm_radius, rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num, rigid_template_center_frac,...
     affine_norm_radius, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix,...
     affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations,...
     downsample_frame_num);
