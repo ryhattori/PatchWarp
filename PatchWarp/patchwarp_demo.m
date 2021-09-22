@@ -53,7 +53,10 @@ rigid_template_center_frac = 0.95;
 % warp_pyramid_levels:                  The number of levels in pyramid scheme (1 for a non pyramid implementation).
 % warp_pyramid_iterations:              The number of iterations per level.
 % warp_template_tiffstack_num:          Number of tif stack files that are used for making the template image.
-% warp_movave_tiffstack_num:            Window size for temporally smoothing downsampled images before estimation of affine transformation matrices.
+% warp_movave_tiffstack_num:            Window size for temporally smoothing downsampled images before estimation of affine transformation matrices. 
+%                                       Use 1 if the session shows good signals. Increase this number if the S/N of the images are low. Although a 
+%                                       large number can improve the accuracy, users should note that distortion needs to be negligible within
+%                                       the frames specifed by this parameter.
 % warp_blocksize:                       Row and column numbers for splitting FOV. Each image is split into [warp_blocksize]*[warp_blocksize] subfields 
 %                                       for estimating and applying affine transformation matrices.
 % warp_overlap_pix_frac:                Fraction of edge pixels that overlaps with the adjacent patches. [warp_overlap_pix_frac]*[length of a patch] pixels 
@@ -75,7 +78,7 @@ affine_norm_radius = 32;
 warp_pyramid_levels = 1;
 warp_pyramid_iterations = 50;
 warp_template_tiffstack_num = 11;
-warp_movave_tiffstack_num = 21;
+warp_movave_tiffstack_num = 1;
 warp_blocksize = 8;     % For moderate distortion, use small number (e.g. 2-4). For severe distortion, use large number. Note that the processing time takes
                         % much longer if you use a large blocksize.
 warp_overlap_pix_frac = 0.15;
