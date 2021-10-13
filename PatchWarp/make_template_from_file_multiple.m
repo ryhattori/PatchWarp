@@ -24,7 +24,7 @@ function [template,selected] = make_template_from_file_multiple(fn, range, align
     end
     
     
-    [pathstr,filename,~] = fileparts(fn{range(3),:});
+    [pathstr,filename,~] = fileparts(fn{range(1),:});
     dirname = fullfile(pathstr,'template');
     if(~java.io.File(dirname).isDirectory())
         mkdir(dirname);
