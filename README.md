@@ -22,7 +22,7 @@ For across-session image registration, please check [**patchwarp_across_sessions
 
 ## Citation
 Example citation format:  
-- Hattori, R. (2021). PatchWarp (Version 1.2.0) [Computer software]. https://zenodo.org/badge/latestdoi/398740395	
+- Hattori, R. (2021). PatchWarp (Version 1.2.0) [Computer software]. https://zenodo.org/record/5590965
 
 [![DOI](https://zenodo.org/badge/398740395.svg)](https://zenodo.org/badge/latestdoi/398740395)
 
