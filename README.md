@@ -22,9 +22,9 @@ For across-session image registration, please check [**patchwarp_across_sessions
 
 ## Citation
 Example citation format:  
-- Hattori, R. (2021). PatchWarp (Version 1.1.0) [Computer software]. https://doi.org/10.5281/zenodo.5484958 	
+- Hattori, R. (2021). PatchWarp (Version 1.2.0) [Computer software]. https://zenodo.org/badge/latestdoi/398740395	
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5484958.svg)](https://doi.org/10.5281/zenodo.5484958)
+[![DOI](https://zenodo.org/badge/398740395.svg)](https://zenodo.org/badge/latestdoi/398740395)
 
 This pipeline was first used for the image processings for the following paper:  
 - Hattori, R., Danskin, B., Babic, Z., Mlynaryk, N., and Komiyama, T.  
