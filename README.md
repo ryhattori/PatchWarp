@@ -25,5 +25,4 @@ Example citation format for the preprint:
 - Hattori, R. and Komiyama, T. (2021). PatchWarp: Corrections of non-uniform image distortions in two-photon calcium imaging data by patchwork affine transformations. _bioRxiv_.
 
 Software DOI:   
-- [![DOI](https://zenodo.org/badge/398740395.svg)]([![DOI](https://zenodo.org/badge/398740395.svg)](https://zenodo.org/badge/latestdoi/398740395))
-
+- [![DOI](https://zenodo.org/badge/398740395.svg)](https://zenodo.org/badge/latestdoi/398740395)
