@@ -21,13 +21,9 @@ For within-session distortion correction, please check [**patchwarp_demo.m**](ht
 For across-session image registration, please check [**patchwarp_across_sessions_demo.m**](https://github.com/ryhattori/PatchWarp/blob/main/PatchWarp/patchwarp_across_sessions_demo.m).
 
 ## Citation
-Example citation format:  
-- Hattori, R. (2021). PatchWarp. [Computer software]. https://doi.org/10.5281/zenodo.5590965
+Example citation format for the preprint:  
+- Hattori, R. and Komiyama, T. (2021). PatchWarp: Corrections of non-uniform image distortions in two-photon calcium imaging data by patchwork affine transformations. bioRxiv.
 
-[![DOI](https://zenodo.org/badge/398740395.svg)](https://zenodo.org/badge/latestdoi/398740395)
+Software DOI:   
+- [![DOI](https://zenodo.org/badge/398740395.svg)](https://zenodo.org/badge/latestdoi/398740395)
 
-This pipeline was first used for the image processings for the following paper:  
-- Hattori, R., Danskin, B., Babic, Z., Mlynaryk, N., and Komiyama, T.  
-Area-Specificity and Plasticity of History-Dependent Value Coding During Learning.  
-Cell, 2019 Jun 13;177(7):1858-1872.e15. doi: 10.1016/j.cell.2019.04.027.  
-[Link to the publication](https://www.cell.com/cell/fulltext/S0092-8674(19)30446-5)
