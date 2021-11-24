@@ -13,7 +13,7 @@ PatchWarp is an image processing pipeline for neuronal calcium imaging data. It 
 (A later imaging session (cyan) was registered to an earlier imaging session (red))
 
 ## Installation
-Download files from this github repository, and add all files to your MATLAB path.
+Download files from this github repository, and add all files to your MATLAB path. 
 
 ## How to use
 Please check example demo files.   
@@ -22,7 +22,7 @@ For across-session image registration, please check [**patchwarp_across_sessions
 
 ## Citation
 Example citation format for the preprint:  
-- Hattori, R. and Komiyama, T. (2021). PatchWarp: Corrections of non-uniform image distortions in two-photon calcium imaging data by patchwork affine transformations. _bioRxiv_ 10.1101/2021.11.10.468164.
+- Hattori, R. and Komiyama, T. (2021). PatchWarp: Corrections of non-uniform image distortions in two-photon calcium imaging data by patchwork affine transformations. _bioRxiv_ doi:10.1101/2021.11.10.468164.
 
 Software DOI from Zenodo:   
 - [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5232757.svg)](https://doi.org/10.5281/zenodo.5232757)
