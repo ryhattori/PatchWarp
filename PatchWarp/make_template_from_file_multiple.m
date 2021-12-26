@@ -1,4 +1,4 @@
-function [template,selected] = make_template_from_file_multiple(fn, range, align_ch, n_ch, threshold, to_save)
+function [template,selected] = make_template_from_file_multiple(fn, stack_range, align_ch, n_ch, threshold, to_save)
     if(nargin<1)
         fn = [];
     end
@@ -24,24 +24,24 @@ function [template,selected] = make_template_from_file_multiple(fn, range, align
     end
     
     
-    [pathstr,filename,~] = fileparts(fn{range(1),:});
+    [pathstr,filename,~] = fileparts(fn{stack_range(1),:});
     dirname = fullfile(pathstr,'template');
     if(~java.io.File(dirname).isDirectory())
         mkdir(dirname);
     end
 %     filename = filename(1:end-4);
-%     for i = 1:length(range)
-%         filename = [filename, '_', num2str(range(i))];
+%     for i = 1:length(stack_range)
+%         filename = [filename, '_', num2str(stack_range(i))];
 %     end
     
     fn_template_tif = fullfile(dirname,[filename '_avg.tif']);
     fn_template_mat = fullfile(dirname,[filename '_avg.mat']);
     
-    info = cell(length(range),1);
-    stacks = cell(length(range),1);
-    for i = 1:length(range)
-         [stacks{i},info{i}, ~] = read_tiff(fn{range(i)}, align_ch, n_ch);
-%        [stacks(i),~,~,info{i}] = read_SI4_image(fn{range(i)},chs);
+    info = cell(length(stack_range),1);
+    stacks = cell(length(stack_range),1);
+    for i = 1:length(stack_range)
+         [stacks{i},info{i}, ~] = read_tiff(fn{stack_range(i)}, align_ch, n_ch);
+%        [stacks(i),~,~,info{i}] = read_SI4_image(fn{stack_range(i)},chs);
     end
     
     if(any(cellfun(@isempty,stacks)))
