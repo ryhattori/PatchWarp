@@ -71,6 +71,7 @@ function [stack,info,frame_tag] = read_tiff(fn, ch, n_ch)
                     stack(:,:,:,i_ch) = stack_raw(:,:,load_frames(i_ch,:));
                 end
                 stack = permute(stack, [2 1 3 4]);
+                reader.delete()
             else
                 first_frame = imread(file_to_read,'tiff','index',load_frames(1));
                 stack = zeros(size(first_frame,1),size(first_frame,2),size(load_frames,2),size(load_frames,1),class(first_frame));
