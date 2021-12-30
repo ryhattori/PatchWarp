@@ -1,4 +1,4 @@
-function patchwarp_results = patchwarp_across_sessions(image1_all, image2_all, transform1, transform2, warp_blocksize, warp_overlap_pix_frac)
+function patchwarp_results = patchwarp_across_sessions(image1_all, image2_all, transform1, transform2, warp_blocksize, warp_overlap_pix_frac, imnorm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PatchWarp application to registration between different imaging sessions
 % -------------------
@@ -15,11 +15,12 @@ warp_init_1st_warp = [1 0 0; 0 1 0];
 warp_init_2nd_warp = [1 0 0; 0 1 0];
 
 n_image_types = size(image1_all, 3);
-for i = 1:n_image_types
-    image1_all(:, :, i) = imnormalize2(image1_all(:, :, i), 32);
-    image2_all(:, :, i) = imnormalize2(image2_all(:, :, i), 32);
+if imnorm == 1
+    for i = 1:n_image_types
+        image1_all(:, :, i) = imnormalize2(image1_all(:, :, i), 32);
+        image2_all(:, :, i) = imnormalize2(image2_all(:, :, i), 32);
+    end
 end
-
 %% Match the sizes of image1 and image2
 x_list = zeros(2, 1);
 y_list = zeros(2, 1);
