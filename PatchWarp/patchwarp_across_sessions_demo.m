@@ -55,14 +55,15 @@ image2_all = cat(3, image2_mean, image2_max);
 % warp_overlap_pix_frac:                Fraction of edge pixels that overlaps with the adjacent patches. [warp_overlap_pix_frac]*[length of a patch] pixels 
 %                                       at the edge of each patch will be shared with the adjacent patch.
 %                                       with its adjacent subfields.
-% imnorm:                               If this is 1, the intensity of the input images are normalized before processing. Disable this normalization by setting this to 0.
-%                                       It is probably better to disable this function if the signal is sparse, 
+% norm_radius:                          If this is > 0, the intensity of each pixel is normalized with the mean intensity within the specified radius. 
+%                                       Disable this normalization by setting this to 0. Usually works better without this normalization.
+%                                       
 transform1 = 'euclidean';
 transform2 = 'affine';
 warp_blocksize = 8;
 warp_overlap_pix_frac = 0.15;
-imnorm = 1;     % Set to 0 if the result does not look good.
-patchwarp_results = patchwarp_across_sessions(image1_all, image2_all, transform1, transform2, warp_blocksize, warp_overlap_pix_frac, imnorm);
+norm_radius = 0;     % Set to > 0 only when the result does not look good.
+patchwarp_results = patchwarp_across_sessions(image1_all, image2_all, transform1, transform2, warp_blocksize, warp_overlap_pix_frac, norm_radius);
 
 save(fullfile(save_path, 'patchwarp_across_session_results.mat'), 'patchwarp_results')
 

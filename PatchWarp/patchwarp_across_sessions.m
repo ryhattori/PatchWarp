@@ -1,4 +1,4 @@
-function patchwarp_results = patchwarp_across_sessions(image1_all, image2_all, transform1, transform2, warp_blocksize, warp_overlap_pix_frac, imnorm)
+function patchwarp_results = patchwarp_across_sessions(image1_all, image2_all, transform1, transform2, warp_blocksize, warp_overlap_pix_frac, norm_radius)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PatchWarp application to registration between different imaging sessions
 % -------------------
@@ -15,10 +15,10 @@ warp_init_1st_warp = [1 0 0; 0 1 0];
 warp_init_2nd_warp = [1 0 0; 0 1 0];
 
 n_image_types = size(image1_all, 3);
-if imnorm == 1
+if norm_radius ~= 0
     for i = 1:n_image_types
-        image1_all(:, :, i) = imnormalize2(image1_all(:, :, i), 32);
-        image2_all(:, :, i) = imnormalize2(image2_all(:, :, i), 32);
+        image1_all(:, :, i) = imnormalize2(image1_all(:, :, i), norm_radius);
+        image2_all(:, :, i) = imnormalize2(image2_all(:, :, i), norm_radius);
     end
 end
 %% Match the sizes of image1 and image2
@@ -83,24 +83,31 @@ for i = 1:n_image_types
 end
 
 %% Get the x-y ranges of each patch for the 2nd piece-wise warp transformations
-warp_overlap_pix = ceil(warp_overlap_pix_frac * (xmax/warp_blocksize));
-qN_x = cell(warp_blocksize, warp_blocksize);
-for i1 = 1:warp_blocksize
-    qN_x{i1,1} = 1:ceil(xmax/warp_blocksize)+warp_overlap_pix;
-    for i2 = 2:warp_blocksize-1
-        qN_x{i1,i2} = (i2-1)*ceil(xmax/warp_blocksize)-warp_overlap_pix:i2*ceil(xmax/warp_blocksize)+warp_overlap_pix;
+if warp_blocksize == 1
+    warp_overlap_pix = 0;
+    qN_x = cell(1, 1);
+    qN_x{1,1} = 1:xmax;
+    qN_y = cell(1, 1);
+    qN_y{1,1} = 1:ymax;
+else
+    warp_overlap_pix = ceil(warp_overlap_pix_frac * (xmax/warp_blocksize));
+    qN_x = cell(warp_blocksize, warp_blocksize);
+    for i1 = 1:warp_blocksize
+        qN_x{i1,1} = 1:ceil(xmax/warp_blocksize)+warp_overlap_pix;
+        for i2 = 2:warp_blocksize-1
+            qN_x{i1,i2} = (i2-1)*ceil(xmax/warp_blocksize)-warp_overlap_pix:i2*ceil(xmax/warp_blocksize)+warp_overlap_pix;
+        end
+        qN_x{i1,warp_blocksize} = (warp_blocksize-1)*ceil(xmax/warp_blocksize)-warp_overlap_pix:xmax;
     end
-    qN_x{i1,warp_blocksize} = (warp_blocksize-1)*ceil(xmax/warp_blocksize)-warp_overlap_pix:xmax;
-end
-qN_y = cell(warp_blocksize,warp_blocksize);
-for i2 = 1:warp_blocksize
-    qN_y{1,i2} = 1:ceil(ymax/warp_blocksize)+warp_overlap_pix;
-    for i1 = 2:warp_blocksize-1
-        qN_y{i1,i2} = (i1-1)*ceil(ymax/warp_blocksize)-warp_overlap_pix:i1*ceil(ymax/warp_blocksize)+warp_overlap_pix;
+    qN_y = cell(warp_blocksize,warp_blocksize);
+    for i2 = 1:warp_blocksize
+        qN_y{1,i2} = 1:ceil(ymax/warp_blocksize)+warp_overlap_pix;
+        for i1 = 2:warp_blocksize-1
+            qN_y{i1,i2} = (i1-1)*ceil(ymax/warp_blocksize)-warp_overlap_pix:i1*ceil(ymax/warp_blocksize)+warp_overlap_pix;
+        end
+        qN_y{warp_blocksize,i2} = (warp_blocksize-1)*ceil(ymax/warp_blocksize)-warp_overlap_pix:ymax;
     end
-    qN_y{warp_blocksize,i2} = (warp_blocksize-1)*ceil(ymax/warp_blocksize)-warp_overlap_pix:ymax;
 end
-
 %% Get the 2nd warp transformation matries using each of the subfield
 warp2_cell = cell(warp_blocksize, warp_blocksize, n_image_types);
 rho2 = NaN(warp_blocksize, warp_blocksize, n_image_types);
