@@ -74,7 +74,7 @@ function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_
     end
     
     if((strcmp(opt,'f')||strcmp(opt,'force')||~pyramid_registration(fn_list{end},[], save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch))) && ~strcmp(opt,'a')
-        if length(fn_list) >= 3
+        if (length(fn_list) >= 3) && (rigid_template_block_num > 1)
             block_range_list = zeros(rigid_template_block_num, 2);
             block_range_list(1, 1) = floor(rigid_template_block_num/2) * round(length(fn_list)/rigid_template_block_num);
             block_range_list(1, 2) = ceil(rigid_template_block_num/2) * round(length(fn_list)/rigid_template_block_num);

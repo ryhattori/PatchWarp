@@ -38,14 +38,14 @@ run_affine_wc = 1;
 %                               calculated between the mean of all frames within a window (specified by rigid_template_tiffstack_num) and each 
 %                               frame within the window. Frames with the correlation coefficient lower than the specified quantile threshold will
 %                               be ignored when obtaining the final template image.
-% rigid_template_center_frac:   Central fraction of a template image used for registration. For example, 5% of pixels are ignored from each edge
-%                               when rigid_template_center_frac = 0.9.
+% rigid_template_center_frac:   Central fraction of a template image used for registration. For example, 10% of pixels are ignored from each edge
+%                               when rigid_template_center_frac = 0.8.
 rigid_norm_method = 'rank';
 rigid_norm_radius = 32;
-rigid_template_tiffstack_num = 5;
-rigid_template_block_num = 5;   % This must be an odd number. Minimum is 3.
+rigid_template_tiffstack_num = 5;   % Note that this number needs to be smaller than the total number of tif stack files in the directory. 
+rigid_template_block_num = 5;   % This must be an odd number (1, 3, 5,...). This parameter will be ignored if [number of tif stack files] < 3.
 rigid_template_threshold = 0.2;
-rigid_template_center_frac = 0.95;
+rigid_template_center_frac = 0.8;
 
 %% Set parameter for warp correction
 % transform:                            Type of the image transformation. 'affine' works best. ('translation', 'euclidean', 'affine', 'homography')
