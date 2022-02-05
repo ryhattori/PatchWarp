@@ -78,7 +78,7 @@ affine_norm_radius = 32;
 warp_pyramid_levels = 1;
 warp_pyramid_iterations = 50;
 warp_template_tiffstack_num = 11;
-warp_movave_tiffstack_num = 10;
+warp_movave_tiffstack_num = 1;
 warp_blocksize = 8;     % For moderate distortion, use small number (e.g. 2-4). For severe distortion, use large number. Note that the processing time takes
                         % much longer if you use a large blocksize.
 warp_overlap_pix_frac = 0.15;
