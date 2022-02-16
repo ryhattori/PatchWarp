@@ -139,6 +139,7 @@ for i1 = 1:warp_blocksize
     end
 end
 rho = NaN(warp_blocksize,warp_blocksize,nz);
+warp_success = NaN(warp_blocksize,warp_blocksize,nz);
 
 warp_range = nan(n_split4warpinit,2);
 for i = 1:n_split4warpinit
@@ -161,7 +162,7 @@ for nth_warp = [n_split4warpinit/2:-1:1,n_split4warpinit/2+1:n_split4warpinit]
     for i3 = warp_range(nth_warp,1):warp_range(nth_warp,2)
         parfor i1 = 1:warp_blocksize
             for i2 = 1:warp_blocksize
-                  [~, warp_cell{i1,i2,i3}, ~, rho(i1,i2,i3)]= ...
+                  [~, warp_cell{i1,i2,i3}, ~, rho(i1,i2,i3), warp_success]= ...
                     ecc_patchwarp(smoothed_downsampled_perstack(qN_y{i1,i2}, qN_x{i1,i2},i3),...
                     template_im_normalized(qN_y{i1,i2}, qN_x{i1,i2}),...
                     warp_pyramid_levels, warp_pyramid_iterations, transform, warp4template{i1, i2, nth_warp});
@@ -173,7 +174,7 @@ for nth_warp = [n_split4warpinit/2:-1:1,n_split4warpinit/2+1:n_split4warpinit]
     for i1 = 1:warp_blocksize
         for i2 = 1:warp_blocksize
             for i3 = warp_range(nth_warp,1):warp_range(nth_warp,2)
-                if sum(sum(abs(warp_cell{i1,i2,i3}) > affinematrix_abssum_threshold))
+                if (sum(sum(abs(warp_cell{i1,i2,i3}) > affinematrix_abssum_threshold)) > 0) || (warp_success(i1,i2,i3) == 0)
                     rho(i1,i2,i3) = NaN;
                 end
                 if isempty(warp_cell{i1,i2,i3})
@@ -368,10 +369,10 @@ downsampled = cell2mat(downsampled_c);
 downsampled_perstack = cell2mat(downsampled_perstack_c);
 
 % save
-write_tiff(fn_downsampled_perstack_save, downsampled_perstack, info_downsampled_perstack);
-write_tiff(fn_downsampled2save, downsampled, info_downsampled_perstack);
-write_tiff(fn_downsampled2save_max, max(downsampled, [], 3), info_downsampled_perstack);
-write_tiff(fn_downsampled2save_mean, mean(downsampled, 3), info_downsampled_perstack);
+write_tiff(fn_downsampled_perstack_save, int16(downsampled_perstack), info_downsampled_perstack);
+write_tiff(fn_downsampled2save, int16(downsampled), info_downsampled_perstack);
+write_tiff(fn_downsampled2save_max, int16(max(downsampled, [], 3)), info_downsampled_perstack);
+write_tiff(fn_downsampled2save_mean, int16(mean(downsampled, 3)), info_downsampled_perstack);
 %     write_tiff(fn_downsampled2save_max_norm, imnormalize2(max(downsampled, [], 3), affine_norm_radius));
 %     write_tiff(fn_downsampled2save_mean_norm, imnormalize2(mean(downsampled, 3), affine_norm_radius));
 

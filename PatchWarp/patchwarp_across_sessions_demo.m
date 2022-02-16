@@ -35,6 +35,11 @@ image2_mean = double(read_tiff(session2_mean_path));
 image1_max = double(read_tiff(session1_max_path));
 image2_max = double(read_tiff(session2_max_path));
 
+%% Normalize image intensity
+image1_mean = 1000*reshape(normalize(image1_mean(:), 'range'), size(image1_mean));
+image2_mean = 1000*reshape(normalize(image2_mean(:), 'range'), size(image2_mean));
+image1_max = 1000*reshape(normalize(image1_max(:), 'range'), size(image1_max));
+image2_max = 1000*reshape(normalize(image2_max(:), 'range'), size(image2_max));
 %% Prepare inputs for PatchWarp
 % Users can use any kinds of 2D summary images. Here, we are using a mean
 % image and a max-projection image. You can use either only one of them, or
@@ -56,13 +61,13 @@ image2_all = cat(3, image2_mean, image2_max);
 %                                       at the edge of each patch will be shared with the adjacent patch.
 %                                       with its adjacent subfields.
 % norm_radius:                          If this is > 0, the intensity of each pixel is normalized with the mean intensity within the specified radius. 
-%                                       Disable this normalization by setting this to 0. Usually works better without this normalization.
+%                                       Disable this normalization by setting this to 0. Disable when the signals are sparse (e.g. dendrite imaging, axon imaging).
 %                                       
 transform1 = 'euclidean';
 transform2 = 'affine';
-warp_blocksize = 8;
+warp_blocksize = 6;
 warp_overlap_pix_frac = 0.15;
-norm_radius = 0;     % Set to > 0 only when the result does not look good.
+norm_radius = 32;     % Set to 0 when the signals are sparse or the result does not look good.
 patchwarp_results = patchwarp_across_sessions(image1_all, image2_all, transform1, transform2, warp_blocksize, warp_overlap_pix_frac, norm_radius);
 
 save(fullfile(save_path, 'patchwarp_across_session_results.mat'), 'patchwarp_results')
