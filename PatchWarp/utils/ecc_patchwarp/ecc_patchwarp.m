@@ -1,4 +1,4 @@
-function [results, warp, warpedImage, rho_final] = ecc_patchwarp(image, template, levels, noi, transform, delta_p_init, learningRate, ptsPerIter)
+function [results, warp_best, warpedImage, rho_best, warp_success] = ecc_patchwarp(image, template, levels, noi, transform, delta_p_init, learningRate, ptsPerIter)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %ECC image alignment algorithm
 %[RESULTS, WARP, WARPEDiMAGE] = ECC(IMAGE, TEMPLATE, LEVELS, NOI, TRANSFORM, DELTA_P_INIT)
@@ -395,5 +395,36 @@ end
 warpedImage = uint8(warpedImage);
 warp = final_warp;
 
-rho_final = results(end,end).rho;
+% rho_final = results(end,end).rho;
+%% Compare the rho of the warp_best to the rho of the identity matrix. By RH.
+image_warped_final = spatial_interp_patchwarp(image, final_warp, transform, 1:size(image, 2), 1:size(image, 1));
+ones_map = image_warped_final > 0 ;
+numOfElem = sum(sum(ones_map~=0));
+meanOfWim = sum(sum(image_warped_final.*(ones_map~=0)))/numOfElem;
+meanOfTemp = sum(sum(template.*(ones_map~=0)))/numOfElem;
+image_warped_final = image_warped_final-meanOfWim;% zero-mean image; is useful for brightness change compensation, otherwise you can comment this line
+tempzm = template-meanOfTemp; % zero-mean template
+image_warped_final(ones_map==0) = 0; % for pixels outside the overlapping area
+tempzm(ones_map==0)=0;
+rho_final_image = tempzm(:)'*image_warped_final(:) / norm(tempzm(:)) / norm(image_warped_final(:));
+
+meanOfWim = sum(sum(image.*(ones_map~=0)))/numOfElem;
+meanOfTemp = sum(sum(template.*(ones_map~=0)))/numOfElem;
+image_zm = image-meanOfWim;% zero-mean image; is useful for brightness change compensation, otherwise you can comment this line
+tempzm = template-meanOfTemp; % zero-mean template
+image_zm(ones_map==0) = 0; % for pixels outside the overlapping area
+tempzm(ones_map==0)=0;
+rho_original_image = tempzm(:)'*image_zm(:) / norm(tempzm(:)) / norm(image_zm(:));
+
+% if (rho_final_image > rho_original_image) && (mean(ones_map(:)) > 0.4)
+if mean(ones_map(:)) > 0.4  % At least 40% area needs to overlap.
+    rho_best = rho_final_image;
+    warp_best = final_warp;
+    warp_success = 1;
+else
+    rho_best = rho_original_image;
+    warp_best = [1 0 0; 0 1 0];
+    warp_success = 0;
+end
+
 %%%
