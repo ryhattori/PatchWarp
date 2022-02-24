@@ -19,10 +19,10 @@ addpath(genpath(patchwarp_path))
 % the max-projection of downsampled movie (e.g. downsampled_50_warped_mean.tif) from the outputs of PatchWarp pipeline.
 % They do not need to be from the main PatchWarp pipeline if you used a different motion correction software.
 % The results are more robust and accurate if both mean and max-projection images are used.
-session1_mean_path = 'G:\Data\171024\RH825\corrected\post_warp_affine\downsampled\downsampled_50_warped_mean.tif';
-session1_max_path = 'G:\Data\171024\RH825\corrected\post_warp_affine\downsampled\downsampled_50_warped_max.tif';
-session2_mean_path = 'G:\Data\171026\RH825\corrected\post_warp_affine\downsampled\downsampled_50_warped_mean.tif';
-session2_max_path = 'G:\Data\171026\RH825\corrected\post_warp_affine\downsampled\downsampled_50_warped_max.tif';
+session1_mean_path = '...\early_session_mean_image.tif';
+session1_max_path = '...\early_session_max_projection_image.tif';
+session2_mean_path = '...\late_session_mean_image.tif';
+session2_max_path = '...\late_session_max_projection_image.tif';
 
 %% Specify saving directory
 save_path = 'G:\Data\171026\RH825';    % Directory where the results will be saved
