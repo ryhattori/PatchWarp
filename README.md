@@ -6,11 +6,13 @@ PatchWarp is an image processing pipeline for neuronal calcium imaging data. It 
 ---
 **Before (Left) and after (Right) PatchWarp warp correction for within-session image distortions**    
 <img src="https://user-images.githubusercontent.com/25396523/131230196-1938d133-6ea5-4814-af53-41e9a949ddae.gif" width="720" height="360">  
-(Example 2.25 hrs *in vivo* two-photon calcium imaging with complex image distortions)
-
+(2.25 hrs *in vivo* 2-photon calcium imaging of cell bodies with complex distortions)  
+<img src="https://user-images.githubusercontent.com/25396523/155606780-a26a148f-3cb9-4083-97b1-3d28fe36f465.gif" width="720" height="360">  
+(19 min *in vivo* 2-photon calcium imaging of axons with complex distortions. Image credit to Chi Ren.)  
+  
 **Before (Left) and after (Right) PatchWarp across-session image registration**   
 <img src="https://user-images.githubusercontent.com/25396523/134836357-30dc6772-b6a7-487e-83b5-adc272076db9.jpg" width="360" height="360"> <img src="https://user-images.githubusercontent.com/25396523/134836358-9c686950-db99-45e5-a43f-d596964c09bf.jpg" width="360" height="360">  
-(A later imaging session (cyan) was registered to an earlier imaging session (red))
+(A later imaging session (cyan) was registered to an earlier imaging session (red)) 
 
 ## Installation
 Download files from this github repository, and add all files to your MATLAB path. 
