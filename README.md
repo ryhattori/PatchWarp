@@ -16,9 +16,13 @@ PatchWarp is an image processing pipeline for neuronal calcium imaging data. It 
 Download files from this github repository, and add all files to your MATLAB path. 
 
 ## How to use
-Please check example demo files.   
+Please check example demo files. 
+
 For within-session distortion correction, please check [**patchwarp_demo.m**](https://github.com/ryhattori/PatchWarp/blob/main/PatchWarp/patchwarp_demo.m).   
-For across-session image registration, please check [**patchwarp_across_sessions_demo.m**](https://github.com/ryhattori/PatchWarp/blob/main/PatchWarp/patchwarp_across_sessions_demo.m).
+Example data to run the demo code is available at https://doi.org/10.6084/m9.figshare.19212501.v1
+
+For across-session image registration, please check [**patchwarp_across_sessions_demo.m**](https://github.com/ryhattori/PatchWarp/blob/main/PatchWarp/patchwarp_across_sessions_demo.m).  
+Example data to run the demo code is available at https://doi.org/10.6084/m9.figshare.19217421.v1
 
 ## Citation
 Example citation format for the preprint:  
