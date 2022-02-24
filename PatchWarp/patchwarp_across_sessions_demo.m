@@ -56,7 +56,7 @@ image2_all = cat(3, image2_mean, image2_max);
 % transform2:                           Transformation type for the 2nd transformations for each subfield. Typically 'affine' should work best. 
 %                                       These 2nd transformation matrices are obtained without pyramids.
 % warp_blocksize:                       Row and column numbers for splitting FOV. Each image is split into [warp_blocksize]*[warp_blocksize] subfields 
-%                                       for estimating and applying affine transformation matrices.
+%                                       for estimating and applying affine transformation matrices. 
 % warp_overlap_pix_frac:                Fraction of edge pixels that overlaps with the adjacent patches. [warp_overlap_pix_frac]*[length of a patch] pixels 
 %                                       at the edge of each patch will be shared with the adjacent patch.
 %                                       with its adjacent subfields.

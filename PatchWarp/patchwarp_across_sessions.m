@@ -67,7 +67,7 @@ end
 warp1_cell = cell(n_image_types, 1);
 rho1 = zeros(n_image_types, 1);
 for i = 1:n_image_types
-    [~, warp1_cell{i}, ~, rho1(i)]= ecc_patchwarp(image2_all(:, :, i), image1_all(:, :, i), warp_pyramid_levels_1st, warp_pyramid_iterations, transform1, warp_init_1st_warp);
+    [~, warp1_cell{i}, ~, rho1(i)]= ecc_patchwarp(image2_all(:, :, i), image1_all(:, :, i), warp_pyramid_levels_1st, warp_pyramid_iterations, transform1, warp_init_1st_warp, 0.1);
 end
 
 %% Apply the 1st warp transformation to the whole FOV
@@ -117,7 +117,7 @@ for i = 1:n_image_types
             [~, warp2_cell{i1, i2, i}, ~, rho2(i1, i2, i)]= ...
                 ecc_patchwarp(image2_warp1(qN_y{i1, i2}, qN_x{i1, i2}, i),...
                 image1_all(qN_y{i1, i2}, qN_x{i1, i2}, i),...
-                warp_pyramid_levels_2nd, warp_pyramid_iterations, transform2, warp_init_2nd_warp);
+                warp_pyramid_levels_2nd, warp_pyramid_iterations, transform2, warp_init_2nd_warp, 0.1);
         end
     end
 end

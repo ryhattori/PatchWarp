@@ -73,6 +73,7 @@ rigid_template_center_frac = 0.8;
 % affinematrix_rho_threshold:           If the enhanced correlation coefficient between the template and transformed subfield is less than or equal to
 %                                       this threshold, the matrix will be ignored before median temporal filtering.
 % affinematrix_medfilt_tiffstack_num:   Window size (number of tif stack files) that are used for median temporal filtering of affine transformation matrices.
+%                                       1 (no median filtering) should work in most cases. Increase this number if warp corrections fail in some blocks.                                   
 transform = 'affine';
 affine_norm_radius = 32;
 warp_pyramid_levels = 1;
@@ -87,7 +88,7 @@ n_split4warpinit = 6;   % This must be an even number.
 affinematrix_abssum_threshold = 50;
 affinematrix_abssum_jump_threshold = 10;
 affinematrix_rho_threshold = 0.5;
-affinematrix_medfilt_tiffstack_num = 15;
+affinematrix_medfilt_tiffstack_num = 1;   
 
 %% Set parameter for a downsampled motion corrected tiff stack
 % This tiff stack file can be used for visual inspection of the motion correction quality
