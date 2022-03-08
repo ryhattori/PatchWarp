@@ -1,5 +1,13 @@
 function [stack,info,frame_tag] = read_tiff(fn, ch, n_ch)
 % Updated such that ScanImageTiffReader is used on Windows PC. by RH
+% Note that tiff files in a network drive will be copied locally in a
+% temporally folder in Mac OS or Linux because MATLAB's imread is very slow
+% for files in a network drive. In Windows, local copies are not created
+% because ScanImageTiffReader reads files in a network drive very
+% efficiently. I have not tested ScanImageTiffReader in Mac OS or Linux, so
+% I enable ScanImageTiffReader only for Windows users for now. At the
+% moment, reading tiff files are much faster on Windows.
+
     if(nargin<1)
         [filename, pathname]=uigetfile({'*.tiff;*.tif','Tiff Files(*.tiff, *.tif)'},'Select Tiff file');
         fn = fullfile(pathname,filename);
@@ -29,7 +37,7 @@ function [stack,info,frame_tag] = read_tiff(fn, ch, n_ch)
     end
     
     temp_fn = [tempname_if_on_network2(fn)];
-    if(~isempty(temp_fn))
+    if (~isempty(temp_fn)) && ~ispc
         copyfile(fn,temp_fn)
         file_to_read = temp_fn;
         file_to_delete = temp_fn;
