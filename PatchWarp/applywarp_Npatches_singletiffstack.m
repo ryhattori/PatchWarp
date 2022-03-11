@@ -1,4 +1,4 @@
-function applywarp_Npatches(fns_tiff_name, fns_summary_name, source_path, save_path, ch, n_ch, warp_cell, transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, overlap_npix, block_size)
+function applywarp_Npatches_singletiffstack(fns_tiff_name, fns_summary_name, source_path, save_path, ch, n_ch, warp_cell, transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, overlap_npix, block_size)
     temp_summary = load(fullfile(source_path, fns_summary_name));
     img_filename = fullfile(source_path, fns_tiff_name);
     
@@ -10,13 +10,14 @@ function applywarp_Npatches(fns_tiff_name, fns_summary_name, source_path, save_p
     end
     
     stack_warp = nan(length(nonzero_row), length(nonzero_column), size(stack, 3));
+
     temp_summary.warp_cell = warp_cell;
     %apply warping to each frame
-    for i3 = 1:size(stack, 3)
+    parfor i3 = 1:size(stack, 3)
         out_temp = cell(block_size, block_size);
         for i1 = 1:block_size
             for i2 = 1:block_size
-                out_temp{i1, i2} = spatial_interp_patchwarp(double(stack(qN_y{i1,i2}, qN_x{i1,i2}, i3)), warp_cell{i1, i2}, transform, 1:length(qN_x{i1, i2}), 1:length(qN_y{i1, i2}));
+                out_temp{i1, i2} = spatial_interp_patchwarp(double(stack(qN_y{i1,i2}, qN_x{i1,i2}, i3)), warp_cell{i1, i2, ceil(i3/temp_summary.n_downsampled)}, transform, 1:length(qN_x{i1, i2}), 1:length(qN_y{i1, i2}));
                 out_temp{i1, i2}(out_temp{i1, i2}==0) = NaN;
             end
         end
@@ -40,7 +41,6 @@ function applywarp_Npatches(fns_tiff_name, fns_summary_name, source_path, save_p
         out_temp2 = nan(length(nonzero_row), length(nonzero_column));
         out_temp2(nonzero_row, nonzero_column) = out_temp;
         out_temp = out_temp2;
-        clearvars out_temp2
 %         nan_elements = find(isnan(out_temp));
 %         out_temp(nan_elements) = (prctile(out_temp(~isnan(out_temp)), 30) - prctile(out_temp(~isnan(out_temp)), 1)).*rand(length(nan_elements), 1) + prctile(out_temp(~isnan(out_temp)), 1);
 

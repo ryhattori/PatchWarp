@@ -1,4 +1,4 @@
-function patchwarp_affine(source_path, save_path, n_ch, align_ch, affine_norm_radius, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix, affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations, downsample_frame_num)
+function patchwarp_affine(source_path, save_path, n_ch, align_ch, affine_norm_radius, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix, affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations, downsample_frame_num, worker_num)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PatchWarp
 % pacman_warp
@@ -53,6 +53,12 @@ fn_downsampled2save_mean = fullfile(save_path,'downsampled',[fn_downsampled_name
 
 disp('Loading downsampled_perstack file...')
 [stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(fn_downsampled_perstack, align_ch, n_ch);
+if ismatrix(stack_downsampled_perstack)
+    downsampled_nframes_used = 1;     % downsampled_[frame_num].tif is used instead of downsampled_perstack.tif if there is only 1 tiff stack file.
+    [stack_downsampled_perstack, ~] = read_tiff(fullfile(source_path,'downsampled',fn_downsampled_name), align_ch, n_ch);
+else
+    downsampled_nframes_used = 0;
+end
 % if ispc %copy to local
 %     disp('Copying downsampled_perstack to local drive...')
 %     img_filename = fn_downsampled_perstack;
@@ -68,7 +74,12 @@ disp('Loading downsampled_perstack file...')
 
 stack_downsampled_perstack = stack_downsampled_perstack(:, 1 + edge_remove_pix:end - edge_remove_pix, :); % remove n pixels from left and right edges. 
 
-zero_zone = min(stack_downsampled_perstack(:, :, 2:end-1),[],3); % zero-zone created by motion correction, but excluding 1st and last
+if size(stack_downsampled_perstack, 3) > 2
+    zero_zone = min(stack_downsampled_perstack(:, :, 2:end-1),[],3); % zero-zone created by motion correction, but excluding 1st and last
+else
+    zero_zone = min(stack_downsampled_perstack(:, :, 2:end),[],3);
+end
+
 nonzero_row = sum(zero_zone,2)~=0;
 nonzero_column = sum(zero_zone,1)~=0;
 stack_downsampled_perstack = stack_downsampled_perstack(nonzero_row, nonzero_column, :); % remove zero-zone
@@ -107,10 +118,37 @@ disp('Estimating affine transformation matrices...')
 warp_cell = cell(warp_blocksize, warp_blocksize, nz);
 
 if mod(n_split4warpinit, 2) == 1
-    error('Session split must be even number for warping')
+    disp('Session split must be even number for warping')
+    if n_split4warpinit == 1
+        n_split4warpinit = n_split4warpinit + 1;
+    else
+        n_split4warpinit = n_split4warpinit - 1;
+    end
+    disp(['n_split4warpinit was changed to ', num2str(n_split4warpinit)])
+end
+
+if n_split4warpinit > nz
+    disp('n_split4warpinit is larger than tiff stack number')
+    if mod(nz, 2) == 0
+        n_split4warpinit = nz;
+    else
+        n_split4warpinit = nz - 1;
+    end
+    disp(['n_split4warpinit was changed to ', num2str(n_split4warpinit)])
+end
+
+if warp_template_tiffstack_num > nz
+    disp('warp_template_tiffstack_num is larger than tiff stack number')
+    if nz == 2
+        warp_template_tiffstack_num = 1;
+    else
+        warp_template_tiffstack_num = nz;
+    end
+    disp(['warp_template_tiffstack_num was changed to ', num2str(nz), ', but strongly recommend to specify smaller number'])
 end
 
 template_im = mean(stack_downsampled_perstack(:, :, round(nz/2)-round((warp_template_tiffstack_num - 1)/2):round(nz/2)- round((warp_template_tiffstack_num - 1)/2) + warp_template_tiffstack_num - 1), 3); % default (:,:,1)
+
 template_im_normalized = imnormalize2(template_im, affine_norm_radius);
 
 smoothed_downsampled_perstack = NaN(ny, nx, nz);
@@ -153,7 +191,7 @@ for i = 1:n_split4warpinit
 end
 
 if isempty(gcp('nocreate'))
-    parpool;
+    parpool(worker_num);
 end
 pctRunOnAll warning off
 
@@ -238,7 +276,7 @@ for nth_warp = [n_split4warpinit/2:-1:1,n_split4warpinit/2+1:n_split4warpinit]
     end
 end
 
-% Clean warp_cell with temporal median filtering
+% Clean warp_cell with temporal median filtering. This is not necessry in most cases.
 half_medfilt_length = round(affinematrix_medfilt_tiffstack_num / 2);
 for i3 = 1:nz
     for i1 = 1:warp_blocksize
@@ -323,19 +361,23 @@ if length(fns_summary) ~= length(fns_tiff)
    error('tiff number does not match summary file number');
 end
 
-if length(fns_tiff) ~= nz
+if (length(fns_tiff) ~= nz) && (downsampled_nframes_used == 0)
    error('warp number does not match file number');
 end
 
 % apply the warp to each file and save
-parfor i = 1:length(fns_tiff)
-    applywarp_Npatches(fns_tiff(i).name, fns_summary(i).name, source_path, save_path, align_ch, n_ch, warp_cell(:,:,i), transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, warp_overlap_pix, warp_blocksize);
+if downsampled_nframes_used == 0
+    parfor i = 1:length(fns_tiff)
+        applywarp_Npatches(fns_tiff(i).name, fns_summary(i).name, source_path, save_path, align_ch, n_ch, warp_cell(:,:,i), transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, warp_overlap_pix, warp_blocksize);
+    end
+else
+    applywarp_Npatches_singletiffstack(fns_tiff.name, fns_summary.name, source_path, save_path, align_ch, n_ch, warp_cell, transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, warp_overlap_pix, warp_blocksize);
 end
 
 %% Generate downsampled movie using summary file
 disp('Generateing downsampled movies...')
 fns_summary_warp = dir(fullfile(save_path, '*summary_warped.mat'));
-if length(fns_summary_warp) ~= nz
+if (length(fns_summary_warp) ~= nz) && (downsampled_nframes_used == 0)
    error('warp number does not match file number');
 end
 
@@ -358,15 +400,21 @@ end
 % downsampled = int16(downsampled);
 % downsampled_perstack = int16(downsampled_perstack);
 
-downsampled_c = cell(1, 1, nz);
-downsampled_perstack_c = cell(1, 1, nz);
-parfor i = 1:nz
-    summary_temp = load(fullfile(save_path, fns_summary_warp(i).name));
-    downsampled_c{i} = int16(summary_temp.downsampled); 
-    downsampled_perstack_c{i} = int16(summary_temp.downsampled_perstack); 
+if downsampled_nframes_used == 0
+    downsampled_c = cell(1, 1, nz);
+    downsampled_perstack_c = cell(1, 1, nz);
+    parfor i = 1:nz
+        summary_temp = load(fullfile(save_path, fns_summary_warp(i).name));
+        downsampled_c{i} = int16(summary_temp.downsampled); 
+        downsampled_perstack_c{i} = int16(summary_temp.downsampled_perstack); 
+    end
+    downsampled = cell2mat(downsampled_c);
+    downsampled_perstack = cell2mat(downsampled_perstack_c);
+else
+    summary_temp = load(fullfile(save_path, fns_summary_warp.name));
+    downsampled = int16(summary_temp.downsampled);
+    downsampled_perstack = int16(summary_temp.downsampled_perstack);
 end
-downsampled = cell2mat(downsampled_c);
-downsampled_perstack = cell2mat(downsampled_perstack_c);
 
 % save
 write_tiff(fn_downsampled_perstack_save, int16(downsampled_perstack), info_downsampled_perstack);

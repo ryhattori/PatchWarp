@@ -64,6 +64,9 @@ function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_
         end
         target = make_template_from_file_multiple(fn_list_corrected_temp1, 1:rigid_template_tiffstack_num, 1, 1, rigid_template_threshold, false);
         write_tiff(target_fn{1}, int16(target));
+        rmdir(fullfile(target_save_path, 'template'))
+        delete(fullfile(target_save_path, '*_corrected.tif'))
+        delete(fullfile(target_save_path, '*_summary.mat'))
     end
     processed = false;
     

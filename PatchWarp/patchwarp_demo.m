@@ -26,6 +26,17 @@ save_ch = 1;
 run_rigid_mc = 1;
 run_affine_wc = 1;
 
+%% Set parameter for downsampled motion corrected tiff stacks
+% Downsampled movie will be created after rigid motion correction and affine correction.
+% These tiff stack files can be used for visual inspection of the motion correction quality.
+% downsample_frame_num:     Window size for non-overlapping moving averaging.
+downsample_frame_num = 50; 
+
+%% Specify the number of workers for parallel processing
+% worker_num:   Specify the number of workers that processing registrations in parallel. Assign all available CPU cores for the maximum processing
+%               speed (e.g. parcluster('local').NumWorkers). If you get 'Out of Memory' error due to limited RAM, assign smaller number of workers.
+worker_num = parcluster('local').NumWorkers; 
+
 %% Set parameter for rigid motion correction
 % rigid_norm_method:            'rank' or 'local'. When PMT noise is high,'rank' method probably works better. Try 'local' when 'rank' does not work well.
 % rigid_norm_radius:            Radius of a circular filter for 'local' normalization method. This used for local intensity normalization before 
@@ -48,6 +59,9 @@ rigid_template_threshold = 0.2;
 rigid_template_center_frac = 0.8;
 
 %% Set parameter for warp correction
+% Same transformation will be applied to all frames in each tiff stack by default because of the slow nature of distortion.
+% However, if there is only 1 tiff stack in the source directory, the # of frames set by 'downsample_frame_num' will be treated as a single stack (block).
+
 % transform:                            Type of the image transformation. 'affine' works best. ('translation', 'euclidean', 'affine', 'homography')
 % affine_norm_radius:                   Radius of a circular filter, which is used for local intensity normalization before gradient-based algorithm.
 % warp_pyramid_levels:                  The number of levels in pyramid scheme (1 for a non pyramid implementation).
@@ -73,12 +87,14 @@ rigid_template_center_frac = 0.8;
 % affinematrix_rho_threshold:           If the enhanced correlation coefficient between the template and transformed subfield is less than or equal to
 %                                       this threshold, the matrix will be ignored before median temporal filtering.
 % affinematrix_medfilt_tiffstack_num:   Window size (number of tif stack files) that are used for median temporal filtering of affine transformation matrices.
-%                                       1 (no median filtering) should work in most cases. Increase this number if warp corrections fail in some blocks.                                   
+%                                       1 (no median filtering) should work in most cases. Increase this number if warp corrections fail in some blocks.   
 transform = 'affine';
 affine_norm_radius = 32;
 warp_pyramid_levels = 1;
 warp_pyramid_iterations = 50;
-warp_template_tiffstack_num = 11;
+warp_template_tiffstack_num = 7;    % Do not exceed the number of tiff stack files in the source directory. 
+                                    % If there is only 1 tiff stack in the source directroy, the # of frames set by 'downsample_frame_num' will be treated 
+                                    % as a single block ([downsample_frame_num]*[warp_template_tiffstack_num] frames will be used to make the template).   
 warp_movave_tiffstack_num = 1;
 warp_blocksize = 8;     % For moderate distortion, use small number (e.g. 2-4). For severe distortion, use large number. Note that the processing time takes
                         % much longer if you use a large blocksize.
@@ -90,16 +106,12 @@ affinematrix_abssum_jump_threshold = 10;
 affinematrix_rho_threshold = 0.5;
 affinematrix_medfilt_tiffstack_num = 1;   
 
-%% Set parameter for a downsampled motion corrected tiff stack
-% This tiff stack file can be used for visual inspection of the motion correction quality
-% downsample_frame_num:     Window size for non-overlapping moving averaging.
-downsample_frame_num = 50; 
 
 %% Run PatchWarp
 patchwarp(source_path, save_path, n_ch, align_ch, save_ch, run_rigid_mc, run_affine_wc,...
     rigid_norm_method, rigid_norm_radius, rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num, rigid_template_center_frac,...
     affine_norm_radius, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix,...
     affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations,...
-    downsample_frame_num);
+    downsample_frame_num, worker_num);
 
 
