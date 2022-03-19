@@ -1,4 +1,4 @@
-function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac)
+function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac, network_temp_copy)
     % save_path should be made beforehand, and all the arguments should be given.
     % if target is empty, do nothing but return whether it is done.
     % 
@@ -33,14 +33,14 @@ function done = pyramid_registration(fn, target, save_path, align_ch, save_ch, n
     
     L.newline('Done. Reading source image. %s', fn);
     if length(save_ch) > 1
-        [image_stack_align, ~] = read_tiff(fn,align_ch,n_ch);
+        [image_stack_align, ~] = read_tiff(fn,align_ch,n_ch,network_temp_copy);
         [image_stack_save, info] = read_tiff(fn,1,1);
     else
         if(align_ch == save_ch)
-            [image_stack_save, info] = read_tiff(fn,save_ch,n_ch);
+            [image_stack_save, info] = read_tiff(fn,save_ch,n_ch,network_temp_copy);
             image_stack_align = image_stack_save;
         else
-            [image_stack, info] = read_tiff(fn,[align_ch save_ch],n_ch);
+            [image_stack, info] = read_tiff(fn,[align_ch save_ch],n_ch,network_temp_copy);
             image_stack_align = image_stack(:,:,:,1);
             image_stack_save = image_stack(:,:,:,2);
         end

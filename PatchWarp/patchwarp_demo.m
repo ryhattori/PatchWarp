@@ -11,6 +11,7 @@ patchwarp_path = 'Z:\People\Ryoma\PatchWarp';
 addpath(genpath(patchwarp_path))
 
 %% Specifiy source directory and saving directory
+% Image data needs to be tiff stack files.
 source_path = 'Z:\People\Ryoma\MC_data\171008\RH825';    % Directory that contains original tif stack files
 save_path = 'Z:\People\Ryoma\MC_data\171008\RH825\corrected';    % Directory where motion corrected images will be saved
 
@@ -31,6 +32,13 @@ run_affine_wc = 1;
 % These tiff stack files can be used for visual inspection of the motion correction quality.
 % downsample_frame_num:     Window size for non-overlapping moving averaging.
 downsample_frame_num = 50; 
+
+%% Option to disable making local copies
+% On Linux or Mac OS, tiff files will be temporarily copied in a temporary folder by default if they are 
+% in a network drive because the pipeline is faster this way in most cases. This behavior can be disabled 
+% by this setting network_temp_copy = 0. More efficient tiff reader (ScanImageTiffreader) will be used on Windows, and 
+% it directly reads tiff in a network drive without making local copies ('network_temp_copy' parameter will be ignored on Windows).
+network_temp_copy = 1;
 
 %% Specify the number of workers for parallel processing
 % worker_num:   Specify the number of workers that processing registrations in parallel. Assign all available CPU cores for the maximum processing
@@ -112,6 +120,6 @@ patchwarp(source_path, save_path, n_ch, align_ch, save_ch, run_rigid_mc, run_aff
     rigid_norm_method, rigid_norm_radius, rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num, rigid_template_center_frac,...
     affine_norm_radius, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix,...
     affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations,...
-    downsample_frame_num, worker_num);
+    downsample_frame_num, worker_num, network_temp_copy);
 
 

@@ -1,4 +1,4 @@
-function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_norm_method, rigid_norm_radius, rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num, rigid_template_center_frac, n_downsampled, n_downsampled_perstack, opt)
+function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_norm_method, rigid_norm_radius, rigid_template_block_num, rigid_template_threshold, rigid_template_tiffstack_num, rigid_template_center_frac, n_downsampled, network_temp_copy, n_downsampled_perstack, opt)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PatchWarp
 % patchwarp_rigid
@@ -32,6 +32,12 @@ function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_
     
     [~, fn_list] = fastdir(source_path, common_regexp('tiff_ext'));
 
+    if length(fn_list) < rigid_template_tiffstack_num
+        disp('rigid_template_tiffstack_num is larger than the number of tiff stack')
+        rigid_template_tiffstack_num = length(fn_list);
+        disp(['rigid_template_tiffstack_num was changed to ', num2str(rigid_template_tiffstack_num)])
+    end
+
     if isempty(n_downsampled_perstack)
         n_downsampled_perstack = inf;
     end
@@ -44,7 +50,7 @@ function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_
     end
     if(~exists_file(target_fn{1}))
         L.newline('Making target from %s', fn_list{middle_tiffstackfile_id});
-        target =  make_template_from_file_multiple(fn_list, middle_tiffstackfile_id - floor((rigid_template_tiffstack_num - 1)/2):middle_tiffstackfile_id + ceil((rigid_template_tiffstack_num - 1)/2),align_ch, n_ch, rigid_template_threshold, false); % 4th is the threshold for quantile(c,1-threshold). 1: use all frames to make a template. 
+        target = make_template_from_file_multiple(fn_list, middle_tiffstackfile_id - floor((rigid_template_tiffstack_num - 1)/2):middle_tiffstackfile_id + ceil((rigid_template_tiffstack_num - 1)/2),align_ch, n_ch, rigid_template_threshold, false, network_temp_copy); % 4th is the threshold for quantile(c,1-threshold). 1: use all frames to make a template. 
         target = parse_image_input(target,align_ch);
         if(~exists_file(save_path))
             L.newline('Make save dir');
@@ -55,14 +61,14 @@ function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_
         end
         
         parfor i = middle_tiffstackfile_id - floor((rigid_template_tiffstack_num - 1)/2):middle_tiffstackfile_id + ceil((rigid_template_tiffstack_num - 1)/2)
-            pyramid_registration(fn_list{i}, target, target_save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac);      
+            pyramid_registration(fn_list{i}, target, target_save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac, network_temp_copy);      
         end
         fn_list_corrected_temp1 = cell(rigid_template_tiffstack_num, 1);
         for i = 1:rigid_template_tiffstack_num
             [~,fn_list_corrected_temp1{i},~] = fileparts(fn_list{i - 1 + middle_tiffstackfile_id - floor((rigid_template_tiffstack_num - 1)/2)});
             fn_list_corrected_temp1{i} = fullfile(target_save_path,[fn_list_corrected_temp1{i} '_corrected.tif']);
         end
-        target = make_template_from_file_multiple(fn_list_corrected_temp1, 1:rigid_template_tiffstack_num, 1, 1, rigid_template_threshold, false);
+        target = make_template_from_file_multiple(fn_list_corrected_temp1, 1:rigid_template_tiffstack_num, 1, 1, rigid_template_threshold, false, network_temp_copy);
         write_tiff(target_fn{1}, int16(target));
         rmdir(fullfile(target_save_path, 'template'))
         delete(fullfile(target_save_path, '*_corrected.tif'))
@@ -76,7 +82,7 @@ function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_
         fn_list_corrected{i} = fullfile(save_path,[fn_list_corrected{i} '_corrected.tif']);
     end
     
-    if((strcmp(opt,'f')||strcmp(opt,'force')||~pyramid_registration(fn_list{end},[], save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch))) && ~strcmp(opt,'a')
+    if((strcmp(opt,'f')||strcmp(opt,'force')||~pyramid_registration(fn_list{end},[], save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac, network_temp_copy))) && ~strcmp(opt,'a')
         if (length(fn_list) >= 3) && (rigid_template_block_num > 1)
             block_range_list = zeros(rigid_template_block_num, 2);
             block_range_list(1, 1) = floor(rigid_template_block_num/2) * round(length(fn_list)/rigid_template_block_num);
@@ -99,36 +105,44 @@ function patchwarp_rigid(source_path, save_path, n_ch, align_ch, save_ch, rigid_
 
             block_id = 1;
             parfor stack_id = block_range_list(block_id, 1):block_range_list(block_id, 2)
-                pyramid_registration(fn_list{stack_id}, target_fn{block_id}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac);      
+                pyramid_registration(fn_list{stack_id}, target_fn{block_id}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac, network_temp_copy);      
             end
-            target = make_template_from_file_multiple(fn_list_corrected, block_range_list(block_id, 2) - rigid_template_tiffstack_num + 1:block_range_list(block_id, 2), align_ch, n_ch, rigid_template_threshold, false);
+            if block_range_list(block_id, 2) - rigid_template_tiffstack_num + 1 < block_range_list(block_id, 1)
+                target = make_template_from_file_multiple(fn_list_corrected, block_range_list(block_id, 1):block_range_list(block_id, 2), align_ch, n_ch, rigid_template_threshold, false, network_temp_copy);
+            else
+                target = make_template_from_file_multiple(fn_list_corrected, block_range_list(block_id, 2) - rigid_template_tiffstack_num + 1:block_range_list(block_id, 2), align_ch, n_ch, rigid_template_threshold, false, network_temp_copy);
+            end
             target = parse_image_input(target, align_ch);
             write_tiff(target_fn{2}, int16(target));
-            target = make_template_from_file_multiple(fn_list_corrected, block_range_list(block_id, 1):block_range_list(block_id, 1) + rigid_template_tiffstack_num - 1, align_ch, n_ch, rigid_template_threshold, false);
+            if block_range_list(block_id, 1) + rigid_template_tiffstack_num - 1 > block_range_list(block_id, 2)
+                target = make_template_from_file_multiple(fn_list_corrected, block_range_list(block_id, 1):block_range_list(block_id, 2), align_ch, n_ch, rigid_template_threshold, false, network_temp_copy);
+            else
+                target = make_template_from_file_multiple(fn_list_corrected, block_range_list(block_id, 1):block_range_list(block_id, 1) + rigid_template_tiffstack_num - 1, align_ch, n_ch, rigid_template_threshold, false, network_temp_copy);
+            end
             target = parse_image_input(target, align_ch);
             write_tiff(target_fn{3}, int16(target));
 
             for i = 1:(rigid_template_block_num - 1)/2
                 parfor stack_id = block_range_list(2 * i, 1):block_range_list(2 * i, 2)
-                    pyramid_registration(fn_list{stack_id}, target_fn{2 * i}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac);      
+                    pyramid_registration(fn_list{stack_id}, target_fn{2 * i}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac, network_temp_copy);      
                 end
                 if i ~=(rigid_template_block_num - 1)/2
-                    target = make_template_from_file_multiple(fn_list_corrected, block_range_list(2 * i, 2) - rigid_template_tiffstack_num + 1:block_range_list(2 * i, 2), align_ch, n_ch, rigid_template_threshold, false);
+                    target = make_template_from_file_multiple(fn_list_corrected, block_range_list(2 * i, 2) - rigid_template_tiffstack_num + 1:block_range_list(2 * i, 2), align_ch, n_ch, rigid_template_threshold, false, network_temp_copy);
                     target = parse_image_input(target, align_ch);
                     write_tiff(target_fn{2 * (i + 1)}, int16(target));
                 end
                 parfor stack_id = block_range_list(2 * i + 1, 1):block_range_list(2 * i + 1, 2)
-                    pyramid_registration(fn_list{stack_id}, target_fn{2 * i + 1}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac);      
+                    pyramid_registration(fn_list{stack_id}, target_fn{2 * i + 1}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac, network_temp_copy);      
                 end
                 if i ~= (rigid_template_block_num - 1)/2
-                    target = make_template_from_file_multiple(fn_list_corrected, block_range_list(2 * i + 1, 1):block_range_list(2 * i + 1, 1) + rigid_template_tiffstack_num - 1, align_ch, n_ch, rigid_template_threshold, false);
+                    target = make_template_from_file_multiple(fn_list_corrected, block_range_list(2 * i + 1, 1):block_range_list(2 * i + 1, 1) + rigid_template_tiffstack_num - 1, align_ch, n_ch, rigid_template_threshold, false, network_temp_copy);
                     target = parse_image_input(target, align_ch);
                     write_tiff(target_fn{2 * (i + 1) + 1}, int16(target));
                 end
             end
         else
             parfor stack_id = 1:length(fn_list)
-                pyramid_registration(fn_list{stack_id}, target_fn{1}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac);      
+                pyramid_registration(fn_list{stack_id}, target_fn{1}, save_path, align_ch, save_ch, n_downsampled, n_downsampled_perstack, n_ch, rigid_norm_method, rigid_norm_radius, rigid_template_center_frac, network_temp_copy);      
             end
         end
             

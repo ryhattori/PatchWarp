@@ -1,4 +1,4 @@
-function patchwarp_affine(source_path, save_path, n_ch, align_ch, affine_norm_radius, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix, affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations, downsample_frame_num, worker_num)
+function patchwarp_affine(source_path, save_path, n_ch, align_ch, affine_norm_radius, warp_template_tiffstack_num, warp_movave_tiffstack_num, warp_blocksize, warp_overlap_pix_frac, n_split4warpinit, edge_remove_pix, affinematrix_abssum_threshold, affinematrix_abssum_jump_threshold, affinematrix_rho_threshold, affinematrix_medfilt_tiffstack_num, transform, warp_pyramid_levels, warp_pyramid_iterations, downsample_frame_num, worker_num, network_temp_copy)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PatchWarp
 % pacman_warp
@@ -52,10 +52,10 @@ fn_downsampled2save_mean = fullfile(save_path,'downsampled',[fn_downsampled_name
 % transform = 'affine';
 
 disp('Loading downsampled_perstack file...')
-[stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(fn_downsampled_perstack, align_ch, n_ch);
+[stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(fn_downsampled_perstack, align_ch, n_ch, network_temp_copy);
 if ismatrix(stack_downsampled_perstack)
     downsampled_nframes_used = 1;     % downsampled_[frame_num].tif is used instead of downsampled_perstack.tif if there is only 1 tiff stack file.
-    [stack_downsampled_perstack, ~] = read_tiff(fullfile(source_path,'downsampled',fn_downsampled_name), align_ch, n_ch);
+    [stack_downsampled_perstack, ~] = read_tiff(fullfile(source_path,'downsampled',fn_downsampled_name), align_ch, n_ch, network_temp_copy);
 else
     downsampled_nframes_used = 0;
 end
@@ -67,9 +67,9 @@ end
 %     disp('Done.')
 %     img_filename = local_filename;
 %     disp(img_filename);
-%     [stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(img_filename, align_ch, n_ch);
+%     [stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(img_filename, align_ch, n_ch, network_temp_copy);
 % else
-%     [stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(fn_downsampled_perstack, align_ch, n_ch);
+%     [stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(fn_downsampled_perstack, align_ch, n_ch, network_temp_copy);
 % end
 
 stack_downsampled_perstack = stack_downsampled_perstack(:, 1 + edge_remove_pix:end - edge_remove_pix, :); % remove n pixels from left and right edges. 
@@ -127,12 +127,24 @@ if mod(n_split4warpinit, 2) == 1
     disp(['n_split4warpinit was changed to ', num2str(n_split4warpinit)])
 end
 
-if n_split4warpinit > nz
-    disp('n_split4warpinit is larger than tiff stack number')
-    if mod(nz, 2) == 0
-        n_split4warpinit = nz;
-    else
-        n_split4warpinit = nz - 1;
+if (n_split4warpinit > nz) || ((n_split4warpinit-1)*ceil(nz/n_split4warpinit)+1 >= nz)
+    disp('n_split4warpinit is too large')
+    if (n_split4warpinit > nz)
+        if mod(nz, 2) == 0
+            n_split4warpinit = nz;
+        else
+            n_split4warpinit = nz - 1;
+        end
+    end
+    if (n_split4warpinit-1)*ceil(nz/n_split4warpinit)+1 >= nz
+        if mod(n_split4warpinit, 2) == 0
+            n_split4warpinit = n_split4warpinit - 2;
+        else
+            n_split4warpinit = n_split4warpinit - 3;
+        end
+    end
+    if n_split4warpinit < 2
+        n_split4warpinit = 2;
     end
     disp(['n_split4warpinit was changed to ', num2str(n_split4warpinit)])
 end
@@ -368,10 +380,10 @@ end
 % apply the warp to each file and save
 if downsampled_nframes_used == 0
     parfor i = 1:length(fns_tiff)
-        applywarp_Npatches(fns_tiff(i).name, fns_summary(i).name, source_path, save_path, align_ch, n_ch, warp_cell(:,:,i), transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, warp_overlap_pix, warp_blocksize);
+        applywarp_Npatches(fns_tiff(i).name, fns_summary(i).name, source_path, save_path, align_ch, n_ch, warp_cell(:,:,i), transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, warp_overlap_pix, warp_blocksize, network_temp_copy);
     end
 else
-    applywarp_Npatches_singletiffstack(fns_tiff.name, fns_summary.name, source_path, save_path, align_ch, n_ch, warp_cell, transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, warp_overlap_pix, warp_blocksize);
+    applywarp_Npatches_singletiffstack(fns_tiff.name, fns_summary.name, source_path, save_path, align_ch, n_ch, warp_cell, transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, warp_overlap_pix, warp_blocksize, network_temp_copy);
 end
 
 %% Generate downsampled movie using summary file

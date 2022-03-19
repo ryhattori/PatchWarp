@@ -1,8 +1,8 @@
-function applywarp_Npatches(fns_tiff_name, fns_summary_name, source_path, save_path, ch, n_ch, warp_cell, transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, overlap_npix, block_size)
+function applywarp_Npatches(fns_tiff_name, fns_summary_name, source_path, save_path, ch, n_ch, warp_cell, transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, overlap_npix, block_size, network_temp_copy)
     temp_summary = load(fullfile(source_path, fns_summary_name));
     img_filename = fullfile(source_path, fns_tiff_name);
     
-    [stack, info, ~] = read_tiff(img_filename, ch, n_ch);
+    [stack, info, ~] = read_tiff(img_filename, ch, n_ch, network_temp_copy);
 
     stack = stack(:, 1+edge_remove_pix:end-edge_remove_pix, :); % remove n pixels from left and right edges.
     if size(stack, 1) == length(nonzero_row) && size(stack, 2) == length(nonzero_column)

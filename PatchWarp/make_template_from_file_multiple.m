@@ -1,4 +1,4 @@
-function [template,selected] = make_template_from_file_multiple(fn, stack_range, align_ch, n_ch, threshold, to_save)
+function [template,selected] = make_template_from_file_multiple(fn, stack_range, align_ch, n_ch, threshold, to_save, network_temp_copy)
     if(nargin<1)
         fn = [];
     end
@@ -40,7 +40,7 @@ function [template,selected] = make_template_from_file_multiple(fn, stack_range,
     info = cell(length(stack_range),1);
     stacks = cell(length(stack_range),1);
     for i = 1:length(stack_range)
-         [stacks{i},info{i}, ~] = read_tiff(fn{stack_range(i)}, align_ch, n_ch);
+         [stacks{i},info{i}, ~] = read_tiff(fn{stack_range(i)}, align_ch, n_ch, network_temp_copy);
 %        [stacks(i),~,~,info{i}] = read_SI4_image(fn{stack_range(i)},chs);
     end
     
