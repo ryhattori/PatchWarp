@@ -21,7 +21,10 @@ function processed = make_downsampled_tiff(save_dir,opt)
     end
     downsampled = cell2mat(downsampled_c);
     downsampled_perstack = cell2mat(downsampled_perstack_c);
-
+    if isempty(downsampled) && (tmp.n_downsampled>0)
+        downsampled = cast(downsample_mean(downsampled_perstack, tmp.n_downsampled,3), class(downsampled_perstack));
+    end
+    
     ffn = fullfile(save_dir,'downsampled',sprintf('downsampled_%d.tif',tmp.n_downsampled));
     ffn_max = fullfile(save_dir,'downsampled',sprintf('downsampled_%d_max.tif',tmp.n_downsampled));
     ffn_mean = fullfile(save_dir,'downsampled',sprintf('downsampled_%d_mean.tif',tmp.n_downsampled));
