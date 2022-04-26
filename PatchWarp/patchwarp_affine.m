@@ -422,6 +422,12 @@ if downsampled_nframes_used == 0
     end
     downsampled = cell2mat(downsampled_c);
     downsampled_perstack = cell2mat(downsampled_perstack_c);
+    if isempty(downsampled)
+        summary_temp = load(fullfile(save_path, fns_summary_warp(1).name));
+        if (summary_temp.n_downsampled>0)
+            downsampled = cast(downsample_mean(downsampled_perstack, summary_temp.n_downsampled,3), class(downsampled_perstack));
+        end
+    end
 else
     summary_temp = load(fullfile(save_path, fns_summary_warp.name));
     downsampled = int16(summary_temp.downsampled);
