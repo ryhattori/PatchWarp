@@ -57,6 +57,10 @@ if ~isfield(ops, 'rigid_template_center_frac')
     disp('ops.rigid_template_center_frac is not specified. Running with ops.rigid_template_center_frac = 0.8')
     ops.rigid_template_center_frac = 0.8;
 end
+if ~isfield(ops, 'rigid_template_fftdenoise')
+    disp('ops.rigid_template_center_frac is not specified. Running with ops.rigid_template_fftdenoise = false')
+    ops.rigid_template_fftdenoise = false;
+end
 if ~isfield(ops, 'affine_norm_radius')
     disp('ops.affine_norm_radius is not specified. Running with ops.affine_norm_radius = 32')
     ops.affine_norm_radius = 32;
@@ -120,6 +124,11 @@ if ~isfield(ops, 'network_temp_copy')
     ops.network_temp_copy = 1;
 end
 
+if (ops.rigid_template_fftdenoise == true)
+    disp('ops.rigid_norm_method changed to local because rigid_template_fftdenoise = true.')
+    ops.rigid_norm_method = 'local';
+end
+
 %% Start parallel pool
 delete(gcp('nocreate'));
 parpool(ops.worker_num);
@@ -129,7 +138,7 @@ save_path_prewarp = fullfile(ops.save_path, 'pre_warp');
 save_path_postwarp = fullfile(ops.save_path, 'post_warp');
 if ops.run_rigid_mc == 1
     disp('Performing rigid motion correction...')
-    patchwarp_rigid(ops.source_path, save_path_prewarp, ops.n_ch, ops.align_ch, ops.save_ch, ops.rigid_norm_method, ops.rigid_norm_radius, ops.rigid_template_block_num, ops.rigid_template_threshold, ops.rigid_template_tiffstack_num, ops.rigid_template_center_frac, ops.downsample_frame_num, ops.network_temp_copy, []);
+    patchwarp_rigid(ops.source_path, save_path_prewarp, ops.n_ch, ops.align_ch, ops.save_ch, ops.rigid_norm_method, ops.rigid_norm_radius, ops.rigid_template_block_num, ops.rigid_template_threshold, ops.rigid_template_tiffstack_num, ops.rigid_template_center_frac, ops.rigid_template_fftdenoise, ops.downsample_frame_num, ops.network_temp_copy, []);
 else
     disp('Skipping rigid motion correction...')
 end

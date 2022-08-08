@@ -1,4 +1,4 @@
-function [template,selected] = make_template_from_file_multiple(fn, stack_range, align_ch, n_ch, threshold, to_save, network_temp_copy)
+function [template,selected] = make_template_from_file_multiple(fn, stack_range, align_ch, n_ch, threshold, fftdenoise, to_save, network_temp_copy)
     if(nargin<1)
         fn = [];
     end
@@ -59,7 +59,7 @@ function [template,selected] = make_template_from_file_multiple(fn, stack_range,
     template = zeros(size(stacks,1),size(stacks,2), 1,stacks_class);
     selected = cell(1,1);
     for i = 1:1
-        [template(:,:,i),selected{i}] = make_template(stacks,[],[],threshold);
+        [template(:,:,i),selected{i}] = make_template_fftdenoise(stacks,[],[],threshold, fftdenoise);
     end
     
     if(to_save)

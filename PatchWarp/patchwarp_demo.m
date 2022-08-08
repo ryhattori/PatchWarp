@@ -39,7 +39,8 @@ ops.downsample_frame_num = 50;
 ops.worker_num = parcluster('local').NumWorkers; 
 
 %% Set parameter for rigid motion correction
-% rigid_norm_method:            'rank' or 'local'. When PMT noise is high,'rank' method probably works better. Try 'local' when 'rank' does not work well.
+% rigid_norm_method:            'rank' or 'local'. Default is 'rank'. Try 'local' when 'rank' does not work well. The normalization is always 'local' 
+%                               when rigid_template_fftdenoise = true.
 % rigid_norm_radius:            Radius of a circular filter for 'local' normalization method. This is used for local intensity normalization before 
 %                               hill climbing algorithm. This parameter will be ignored when the method is 'rank'.
 % rigid_template_tiffstack_num: Number of tif stack files used for estimating template images. For example, if each tif stack file has 500
@@ -52,12 +53,15 @@ ops.worker_num = parcluster('local').NumWorkers;
 %                               be ignored when obtaining the final template image.
 % rigid_template_center_frac:   Central fraction of a template image used for registration. For example, 10% of pixels are ignored from each edge
 %                               when rigid_template_center_frac = 0.8.
+% rigid_template_fftdenoise:    If true, strong periodic patterns (e.g. ripple patterns of PMT noise) will be removed from the template images by Fourier transform. 
+%                               This function improves the registration accuracy when PMT noise is obvious on the images due to dim calcium signals (e.g. GRIN lens imaging).
 ops.rigid_norm_method = 'rank';
 ops.rigid_norm_radius = 32;
-ops.rigid_template_tiffstack_num = 5;   % Note that this number needs to be smaller than the total number of tif stack files in the directory. 
+ops.rigid_template_tiffstack_num = 5;   % Note that this number needs to be smaller than the total number of tif stack files in the directory. Increase this number if the signals are dim.
 ops.rigid_template_block_num = 5;   % This must be an odd number (1, 3, 5,...). This parameter will be ignored if [number of tif stack files] < 3.
 ops.rigid_template_threshold = 0.2;
-ops.rigid_template_center_frac = 0.8;
+ops.rigid_template_center_frac = 0.8;                               
+ops.rigid_template_fftdenoise = false;
 
 %% Set parameter for warp correction
 % Same transformation will be applied to all frames in each tiff stack by default because of the slow nature of distortion.
