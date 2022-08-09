@@ -118,7 +118,8 @@ if ~isfield(ops, 'downsample_frame_num')
 end
 if ~isfield(ops, 'worker_num')
     disp('ops.worker_num is not specified. Running with maximum worker number. Limit the number if you see out of memory error.')
-    ops.worker_num = parcluster('local').NumWorkers;
+    cluster_properties = parcluster('local');
+    ops.worker_num = cluster_properties.NumWorkers; 
 end
 if ~isfield(ops, 'network_temp_copy')
     ops.network_temp_copy = 1;
