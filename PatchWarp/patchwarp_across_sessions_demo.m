@@ -106,14 +106,12 @@ title('Max images after 2nd transformation (affine)')
 second_affine = 1;
 image_path = 'G:\Data\171026\RH825\corrected\post_warp_affine\downsampled\roi_mask.tif';
 % image_path = 'G:\Data\171026\RH825\corrected\post_warp_affine\RH825camk2GC6sx18p70MatchingRSCr_001_002_corrected_warped.tif';
+
 input_images = double(read_tiff(image_path));
 
 [images_warp1, images_warp2] = patchwarp_across_sessions_apply(input_images, patchwarp_results, second_affine);
 
-figure
-set(gcf,'Position',[50 50 1550 950])
-subplot(2,3,1)
-imshow(imfuse(input_images(:, :, 1), images_warp1(:, :, 1),'falsecolor','Scaling','joint','ColorChannels','red-cyan'));
-subplot(2,3,2)
-imshow(imfuse(input_images(:, :, 1), images_warp2(:, :, 1),'falsecolor','Scaling','joint','ColorChannels','red-cyan'));
+% An input image can be any images with the same size from session#2. e.g. Binary cellular ROI mask, 3D tiff stack, summary image.
+% For example, if '...\late_session_max_projection_image.tif'is used as the input_image, it will return the same transformed image as in
+% "patchwarp_results.image2_warp1/2" from the previous section. Note that the edge pixels have 0 values in these warped images.
 
