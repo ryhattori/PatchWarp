@@ -52,10 +52,10 @@ fn_downsampled2save_mean = fullfile(save_path,'downsampled',[fn_downsampled_name
 % transform = 'affine';
 
 disp('Loading downsampled_perstack file...')
-[stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(fn_downsampled_perstack, align_ch, 1, network_temp_copy);
+[stack_downsampled_perstack, info_downsampled_perstack] = read_tiff(fn_downsampled_perstack, 1, 1, network_temp_copy);
 if ismatrix(stack_downsampled_perstack)
     downsampled_nframes_used = 1;     % downsampled_[frame_num].tif is used instead of downsampled_perstack.tif if there is only 1 tiff stack file.
-    [stack_downsampled_perstack, ~] = read_tiff(fullfile(source_path,'downsampled',fn_downsampled_name), align_ch, 1, network_temp_copy);
+    [stack_downsampled_perstack, ~] = read_tiff(fullfile(source_path,'downsampled',fn_downsampled_name), 1, 1, network_temp_copy);
 else
     downsampled_nframes_used = 0;
 end
