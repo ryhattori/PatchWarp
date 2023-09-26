@@ -378,6 +378,8 @@ if (length(fns_tiff) ~= nz) && (downsampled_nframes_used == 0)
 end
 
 % apply the warp to each file and save
+n_ch = 1;   % assuming that only 1 ch images were saved at rigid correction step
+align_ch = 1;   % assuming that only 1 ch images were saved at rigid correction step
 if downsampled_nframes_used == 0
     parfor i = 1:length(fns_tiff)
         applywarp_Npatches(fns_tiff(i).name, fns_summary(i).name, source_path, save_path, align_ch, n_ch, warp_cell(:,:,i), transform, edge_remove_pix, nonzero_row, nonzero_column, qN_x, qN_y, warp_overlap_pix, warp_blocksize, network_temp_copy);
