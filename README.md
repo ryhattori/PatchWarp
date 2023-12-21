@@ -15,7 +15,7 @@ PatchWarp is an image processing pipeline for neuronal calcium imaging data. It 
 (A later imaging session (cyan) was registered to an earlier imaging session (red)) 
 
 ## Installation
-Download files from this github repository, and add all files to your MATLAB path. The code does not work properly on MATLAB2023. Please use older MATLAB version. 
+Download files from this github repository, and add all files to your MATLAB path. The code does not work properly on MATLAB2023. Please use older MATLAB version.   
 ****Note that PatchWarp uses Parallel Computing Toolbox. The toolbox needs to be installed to run PatchWarp code.**
 
 ## How to use
